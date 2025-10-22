@@ -1,0 +1,49 @@
+{
+  "name": "influenceops",
+  "version": "1.0.0",
+  "private": true,
+  "authors": "raphael.lcv",
+  "description": "Logiciel de tableau de bord pour influenceurs et entrepreneurs",
+  "main": "app/main.cjs",
+  "type": "commonjs",
+  "scripts": {
+    "postinstall": "electron-forge import || echo forge-ready",
+    "dev": "concurrently -k \"npm:dev:*\"",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:renderer": "vite",
+    "dev:electron": "wait-on tcp:5173 && electron .",
+    "make": "vite build && tsc -p tsconfig.app.json && electron-forge make",
+    "start": "electron .",
+    "build:server": "tsc -p tsconfig.server.json"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "autoprefixer": "^10.4.21",
+    "cors": "^2.8.5",
+    "electron-is-dev": "^3.0.1",
+    "express": "^4.19.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.6.0",
+    "@electron-forge/maker-squirrel": "^7.6.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.7.4",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "concurrently": "^8.2.2",
+    "electron": "^31.3.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8",
+    "wait-on": "^8.0.0"
+  }
+}
