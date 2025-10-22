@@ -1,0 +1,22 @@
+# Node
+.vs/
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+.cache/
+
+# Environnement local
+.env
+.env.local
+
+# Système
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Vite / Electron build
+out/
+release/

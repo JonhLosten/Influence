@@ -1,0 +1,19 @@
+{
+    "app.title": "InfluenceOps",
+    "nav.dashboard": "Dashboard",
+    "nav.instagram": "Instagram",
+    "nav.facebook": "Facebook",
+    "nav.tiktok": "TikTok",
+    "nav.youtube": "YouTube",
+    "nav.settings": "Settings",
+    "kpi.totalViews": "Total views",
+    "kpi.impressions": "Impressions",
+    "kpi.followers": "Followers",
+    "kpi.engagement": "Engagement (%)",
+    "loading": "Loading\u2026",
+    "topContent": "Top content (engagement)",
+    "trendViews": "Views trend (synthetic)",
+    "settings.language": "Language",
+    "settings.language.fr": "French",
+    "settings.language.en": "English"
+}
