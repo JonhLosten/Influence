@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { getLang as getStoredLang, setLang as persistLang, type Lang } from "../i18n";
 
 export type NetworkName = "instagram" | "facebook" | "tiktok" | "youtube";
 
@@ -6,14 +7,15 @@ export interface Account {
   id: string;
   network: NetworkName;
   displayName: string; // ex: "@laugh-logic" ou "Laugh Logic"
-  folder: string;      // nom du dossier
+  folder: string; // nom du dossier
 }
 
 interface AppState {
   networkOrder: NetworkName[];
   accounts: Account[];
-  folders: string[];       // <— ajouté
+  folders: string[]; // <— ajouté
   activeFolder?: string;
+  lang: Lang;
 }
 
 interface AppActions {
@@ -23,6 +25,7 @@ interface AppActions {
   addFolder: (name: string) => void;
   removeFolder: (name: string) => void;
   setActiveFolder: (folder?: string) => void;
+  setLang: (lang: Lang) => void;
 }
 
 interface AppContextType {
@@ -38,13 +41,20 @@ export function useAppState() {
   return ctx;
 }
 
+function createId() {
+  const time = Date.now().toString(36);
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `${time}-${rand}`;
+}
+
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<AppState>({
+  const [state, setState] = useState<AppState>(() => ({
     networkOrder: ["instagram", "facebook", "tiktok", "youtube"],
     accounts: [],
-    folders: ["Par défaut"],            // <— un dossier par défaut
+    folders: ["Par défaut"], // <— un dossier par défaut
     activeFolder: undefined,
-  });
+    lang: getStoredLang(),
+  }));
 
   const reorderNetworks = (from: number, to: number) => {
     setState((s) => {
@@ -55,12 +65,11 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
-  // ✅ MAJ immédiate du state (sans muter)
   const addAccount = (acc: Omit<Account, "id">) => {
-    setState((s) => {
-      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      return { ...s, accounts: [...s.accounts, { id, ...acc }] };
-    });
+    setState((s) => ({
+      ...s,
+      accounts: [...s.accounts, { id: createId(), ...acc }],
+    }));
   };
 
   const removeAccount = (id: string) => {
@@ -91,15 +100,31 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setState((s) => ({ ...s, activeFolder: folder }));
   };
 
-  const value: AppContextType = {
-    state,
-    actions: { reorderNetworks, addAccount, removeAccount, addFolder, removeFolder, setActiveFolder },
+  const setLang = (lang: Lang) => {
+    const next = lang === "en" ? "en" : "fr";
+    persistLang(next);
+    setState((s) => (s.lang === next ? s : { ...s, lang: next }));
   };
+
+  const value = useMemo<AppContextType>(
+    () => ({
+      state,
+      actions: {
+        reorderNetworks,
+        addAccount,
+        removeAccount,
+        addFolder,
+        removeFolder,
+        setActiveFolder,
+        setLang,
+      },
+    }),
+    [state]
+  );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
-// Utilitaire
 export function getAccountsByNetwork(accounts: Account[], network: NetworkName) {
   return accounts.filter((a) => a.network === network);
 }

@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
+    "module": "ESNext",
     "outDir": "./dist",
     "rootDir": "./",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -12,9 +13,7 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src/**/*",
-    "server/**/*",
-    "app/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",

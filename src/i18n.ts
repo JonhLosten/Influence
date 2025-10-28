@@ -1,25 +1,55 @@
+import fr from "./locales/fr.json";
+import en from "./locales/en.json";
 
-import fr from './locales/fr.json'
-import en from './locales/en.json'
+export type LocaleKey = keyof typeof fr;
+export type Lang = "fr" | "en";
 
-export type LocaleKey = keyof typeof fr
+const DICTS: Record<Lang, Record<string, string>> = { fr, en };
+const STORAGE_KEY = "influenceops.lang";
+const DEFAULT_LANG: Lang = "fr";
 
-const DICTS: Record<string, Record<string, string>> = { fr, en }
+let currentLang: Lang = DEFAULT_LANG;
 
-const STORAGE_KEY = 'influenceops.lang'
+const listeners = new Set<(lang: Lang) => void>();
 
-export function getLang(): 'fr'|'en' {
-  const v = localStorage.getItem(STORAGE_KEY)
-  return (v === 'en' || v === 'fr') ? v : 'fr'
+function readStoredLang(): Lang {
+  if (typeof window === "undefined") return DEFAULT_LANG;
+  try {
+    const value = window.localStorage.getItem(STORAGE_KEY);
+    if (value === "en" || value === "fr") {
+      return value;
+    }
+  } catch (err) {
+    console.warn("Unable to read language from storage", err);
+  }
+  return DEFAULT_LANG;
 }
 
-export function setLang(l: 'fr'|'en') {
-  localStorage.setItem(STORAGE_KEY, l)
-  window.location.reload()
+currentLang = readStoredLang();
+
+export function getLang(): Lang {
+  return currentLang;
+}
+
+export function setLang(lang: Lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, lang);
+    } catch (err) {
+      console.warn("Unable to persist language", err);
+    }
+  }
+  listeners.forEach((listener) => listener(lang));
+}
+
+export function subscribeToLangChange(listener: (lang: Lang) => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
 export function t(key: LocaleKey): string {
-  const lang = getLang()
-  const dict = DICTS[lang] || DICTS.fr
-  return dict[key] || key
+  const dict = DICTS[currentLang] || DICTS[DEFAULT_LANG];
+  return dict[key] || key;
 }
