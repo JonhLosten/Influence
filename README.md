@@ -30,3 +30,11 @@ Tableau de bord multi-réseaux (Instagram, Facebook, TikTok, YouTube).
 ## 📦 Scripts utiles
 - `npm run dev` : serveur API + Vite + Electron.
 - `npm run make` : build production (.exe).
+- `npm run build:web` : génère la version statique Vite (utilisée pour `gh-pages`).
+
+## 🌍 Publication web
+- Chaque `push` sur `main` ou `work` déclenche une action GitHub qui :
+  - installe les dépendances,
+  - exécute `npm run build:web`,
+  - publie automatiquement le contenu du dossier `dist/` sur la branche `gh-pages`.
+- Un déclenchement manuel est possible via l'onglet **Actions** → *Deploy to GitHub Pages*.
