@@ -9,6 +9,15 @@ type Suggestion = {
   url?: string;
 };
 
+const CACHE_KEY = "influenceops.suggestions-cache";
+const CACHE_VERSION = 1;
+const CACHE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 jours
+
+type SuggestionCache = {
+  version: number;
+  entries: Record<string, { expiresAt: number; items: Suggestion[] }>;
+};
+
 const FALLBACK_SUGGESTIONS: Record<NetworkName, Suggestion[]> = {
   youtube: [
     {
@@ -108,8 +117,69 @@ function filterFallback(network: NetworkName, query: string) {
   );
 }
 
+function readCache(): SuggestionCache {
+  if (typeof window === "undefined") {
+    return { version: CACHE_VERSION, entries: {} };
+  }
+  try {
+    const raw = window.localStorage.getItem(CACHE_KEY);
+    if (!raw) {
+      return { version: CACHE_VERSION, entries: {} };
+    }
+    const parsed = JSON.parse(raw) as SuggestionCache;
+    if (parsed.version !== CACHE_VERSION || !parsed.entries) {
+      return { version: CACHE_VERSION, entries: {} };
+    }
+    return parsed;
+  } catch (err) {
+    console.warn("suggestAccounts: unable to read cache", err);
+    return { version: CACHE_VERSION, entries: {} };
+  }
+}
+
+function writeCache(cache: SuggestionCache) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  } catch (err) {
+    console.warn("suggestAccounts: unable to persist cache", err);
+  }
+}
+
+function cacheKey(network: NetworkName, query: string) {
+  return `${network}:${query.trim().toLowerCase()}`;
+}
+
+function getCachedSuggestions(network: NetworkName, query: string) {
+  const cache = readCache();
+  const key = cacheKey(network, query);
+  const hit = cache.entries[key];
+  if (!hit) return null;
+  if (Date.now() > hit.expiresAt) {
+    delete cache.entries[key];
+    writeCache(cache);
+    return null;
+  }
+  return hit.items;
+}
+
+function storeSuggestions(network: NetworkName, query: string, items: Suggestion[]) {
+  const cache = readCache();
+  const key = cacheKey(network, query);
+  cache.entries[key] = {
+    expiresAt: Date.now() + CACHE_TTL,
+    items,
+  };
+  writeCache(cache);
+}
+
 export async function suggestAccounts(network: NetworkName, query: string): Promise<Suggestion[]> {
   if (!query.trim()) return [];
+
+  const cached = getCachedSuggestions(network, query);
+  if (cached) {
+    return cached;
+  }
 
   let search = query.trim();
   switch (network) {
@@ -153,17 +223,20 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
           followers: deterministicFollowers(handle),
           avatar: guessDefaultAvatar(network),
           url: r.FirstURL,
-        };
+        } satisfies Suggestion;
       });
 
     if (results.length > 0) {
+      storeSuggestions(network, query, results);
       return results;
     }
   } catch (err) {
     console.warn("suggestAccounts: fallback to offline dataset", err);
   }
 
-  return filterFallback(network, query);
+  const fallback = filterFallback(network, query);
+  storeSuggestions(network, query, fallback);
+  return fallback;
 }
 
 function cleanTitle(title: string): string {

@@ -1,85 +1,82 @@
-import express from "express";
-import cors from "cors";
-import { normalizeProfile, normalizePosts } from "./normalize";
+import { createServer, type IncomingMessage, type ServerResponse } from "http";
+import { URL } from "url";
+import { createAnalyticsPipeline } from "./pipeline";
 import { getProfileAnalytics, getPostsAnalytics } from "./ayrshare";
 import type { Network } from "./types";
 
-const app = express();
 const PORT = Number(process.env.PORT || 5174);
 
-app.use(cors());
-app.use(express.json());
+const pipeline = createAnalyticsPipeline({
+  fetchProfile: getProfileAnalytics,
+  fetchPosts: getPostsAnalytics,
+});
 
-const SUPPORTED_NETWORKS: Network[] = ["instagram", "facebook", "tiktok", "youtube"];
-
-function isNetwork(value: string): value is Network {
-  return (SUPPORTED_NETWORKS as string[]).includes(value);
+function sendJSON(
+  res: ServerResponse,
+  status: number,
+  body: unknown,
+  origin: string | undefined
+) {
+  res.writeHead(status, {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": origin || "*",
+    "Access-Control-Allow-Methods": "GET,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  });
+  res.end(JSON.stringify(body));
 }
 
-function parseDays(input: unknown, fallback = 30) {
-  const parsed = typeof input === "string" ? parseInt(input, 10) : fallback;
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(Math.max(parsed, 1), 365);
-}
-
-app.get("/api/networks/:network", async (req, res) => {
-  const { network } = req.params;
-  if (!isNetwork(network)) {
-    res.status(400).json({ error: "Unknown network" });
+const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+  if (!req.url) {
+    sendJSON(res, 404, { error: "Not found" }, req.headers.origin);
     return;
   }
-  const days = parseDays(req.query.days, 30);
+
+  const origin = req.headers.origin || "*";
+  const url = new URL(req.url, `http://localhost:${PORT}`);
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method !== "GET") {
+    sendJSON(res, 405, { error: "Method not allowed" }, origin);
+    return;
+  }
+
   try {
-    const [profileRaw, postsRaw] = await Promise.all([
-      getProfileAnalytics(network, days),
-      getPostsAnalytics(network, days),
-    ]);
-    const profile = normalizeProfile(network, profileRaw);
-    const posts = normalizePosts(network, postsRaw);
-    res.json({ network, profile, posts });
+    if (url.pathname.startsWith("/api/networks/")) {
+      const network = url.pathname.split("/").pop() as string;
+      if (!pipeline.ensureNetwork(network)) {
+        sendJSON(res, 400, { error: "Unknown network" }, origin);
+        return;
+      }
+      const days = pipeline.clampDays(url.searchParams.get("days"), 30);
+      const snapshot = await pipeline.fetchSnapshot(network as Network, days);
+      sendJSON(res, 200, snapshot, origin);
+      return;
+    }
+
+    if (url.pathname === "/api/overview") {
+      const days = pipeline.clampDays(url.searchParams.get("days"), 30);
+      const overview = await pipeline.fetchOverview(days);
+      sendJSON(res, 200, overview, origin);
+      return;
+    }
+
+    sendJSON(res, 404, { error: "Not found" }, origin);
   } catch (error) {
-    console.error(`Failed to fetch analytics for ${network}`, error);
-    res.status(500).json({ error: "Failed to fetch analytics" });
+    console.error("Failed to handle analytics request", error);
+    sendJSON(res, 500, { error: "Failed to compute analytics" }, origin);
   }
 });
 
-app.get("/api/overview", async (req, res) => {
-  const days = parseDays(req.query.days, 30);
-  try {
-    const snapshots = await Promise.all(
-      SUPPORTED_NETWORKS.map(async (network) => {
-        const [profileRaw, postsRaw] = await Promise.all([
-          getProfileAnalytics(network, days),
-          getPostsAnalytics(network, days),
-        ]);
-        return {
-          network,
-          profile: normalizeProfile(network, profileRaw),
-          posts: normalizePosts(network, postsRaw),
-        };
-      })
-    );
-
-    const networksSummary = snapshots.reduce(
-      (acc, item) => {
-        acc[item.network] = item.profile.views;
-        return acc;
-      },
-      {} as Record<Network, number>
-    );
-
-    const topPosts = snapshots
-      .flatMap((item) => item.posts)
-      .sort((a, b) => (b.engagementRate ?? 0) - (a.engagementRate ?? 0))
-      .slice(0, 9);
-
-    res.json({ networks: networksSummary, topPosts });
-  } catch (error) {
-    console.error("Failed to compute overview analytics", error);
-    res.status(500).json({ error: "Failed to compute overview" });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`✅ API mock démarrée sur http://localhost:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`✅ Analytics pipeline active on http://localhost:${PORT}`);
 });

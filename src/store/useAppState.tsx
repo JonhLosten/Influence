@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
-import { getLang as getStoredLang, setLang as persistLang, type Lang } from "../i18n";
 
 export type NetworkName = "instagram" | "facebook" | "tiktok" | "youtube";
 
@@ -15,7 +14,6 @@ interface AppState {
   accounts: Account[];
   folders: string[]; // <— ajouté
   activeFolder?: string;
-  lang: Lang;
 }
 
 interface AppActions {
@@ -25,7 +23,6 @@ interface AppActions {
   addFolder: (name: string) => void;
   removeFolder: (name: string) => void;
   setActiveFolder: (folder?: string) => void;
-  setLang: (lang: Lang) => void;
 }
 
 interface AppContextType {
@@ -47,13 +44,14 @@ function createId() {
   return `${time}-${rand}`;
 }
 
-export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [state, setState] = useState<AppState>(() => ({
     networkOrder: ["instagram", "facebook", "tiktok", "youtube"],
     accounts: [],
     folders: ["Par défaut"], // <— un dossier par défaut
     activeFolder: undefined,
-    lang: getStoredLang(),
   }));
 
   const reorderNetworks = (from: number, to: number) => {
@@ -100,12 +98,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setState((s) => ({ ...s, activeFolder: folder }));
   };
 
-  const setLang = (lang: Lang) => {
-    const next = lang === "en" ? "en" : "fr";
-    persistLang(next);
-    setState((s) => (s.lang === next ? s : { ...s, lang: next }));
-  };
-
   const value = useMemo<AppContextType>(
     () => ({
       state,
@@ -116,7 +108,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addFolder,
         removeFolder,
         setActiveFolder,
-        setLang,
       },
     }),
     [state]

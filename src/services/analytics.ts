@@ -28,15 +28,34 @@ export interface NormalizedPost {
   thumbnail?: string;
 }
 
+export interface TrendPoint {
+  date: string;
+  views: number;
+  delta: number;
+}
+
+export interface AnalyticsSummary {
+  headline: { fr: string; en: string };
+  description: { fr: string; en: string };
+  delta: number;
+  direction: "up" | "down";
+  baseline: number;
+}
+
 export interface NetworkSnapshotResponse {
   network: NetworkName;
   profile: NetworkProfile;
   posts: NormalizedPost[];
+  topPosts: NormalizedPost[];
+  trends: TrendPoint[];
+  summary: AnalyticsSummary;
 }
 
 export interface OverviewAnalytics {
   networks: Record<NetworkName, number>;
   topPosts: NormalizedPost[];
+  summaries: Record<NetworkName, AnalyticsSummary>;
+  trends: TrendPoint[];
 }
 
 function resolveUrl(path: string) {
@@ -44,7 +63,10 @@ function resolveUrl(path: string) {
   return `${base}${path}`;
 }
 
-export async function fetchNetworkSnapshot(network: NetworkName, days: number): Promise<NetworkSnapshotResponse> {
+export async function fetchNetworkSnapshot(
+  network: NetworkName,
+  days: number
+): Promise<NetworkSnapshotResponse> {
   const res = await fetch(resolveUrl(`/api/networks/${network}?days=${days}`));
   if (!res.ok) {
     throw new Error(`API ${res.status}`);

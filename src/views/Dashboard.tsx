@@ -10,8 +10,7 @@ import {
   Legend,
 } from "recharts";
 
-import { t } from "../i18n";
-import { useAppState } from "../store/useAppState";
+import { useLanguage } from "../i18n";
 import { SocialIcon } from "../components/SocialIcon";
 import { getDashboardData, MockPost } from "./_dataMock";
 import { fetchOverviewAnalytics } from "../services/analytics";
@@ -35,13 +34,13 @@ const periodLabels: Record<Period, { fr: string; en: string }> = {
 };
 
 export const Dashboard: React.FC = () => {
-  const {
-    state: { lang },
-  } = useAppState();
+  const { lang, t } = useLanguage();
   const [period, setPeriod] = React.useState<Period>("7d");
   const [data, setData] = React.useState(() => getDashboardData(periodToDays["7d"]));
   const [loading, setLoading] = React.useState(false);
-  const [overview, setOverview] = React.useState<Awaited<ReturnType<typeof fetchOverviewAnalytics>> | null>(null);
+  const [overview, setOverview] = React.useState<
+    Awaited<ReturnType<typeof fetchOverviewAnalytics>> | null
+  >(null);
   const [overviewError, setOverviewError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -94,7 +93,7 @@ export const Dashboard: React.FC = () => {
     return fallback;
   }, [overview, data.trendStack]);
 
-  const viewsLabel = lang === "fr" ? "vues" : "views";
+  const viewsLabel = t("dashboard.viewsLabel");
 
   type DisplayPost = MockPost & { url?: string };
 
@@ -143,6 +142,37 @@ export const Dashboard: React.FC = () => {
         ))}
       </div>
 
+      {overview && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {Object.entries(overview.summaries).map(([networkKey, summary]) => {
+            const directionLabel =
+              summary.direction === "up"
+                ? t("dashboard.direction.up")
+                : t("dashboard.direction.down");
+            const deltaDisplay = `${summary.direction === "down" ? "-" : "+"}${summary.delta.toFixed(1)}%`;
+            const description = summary.description[lang as "fr" | "en"] ?? summary.description.fr;
+            return (
+              <div key={networkKey} className="bg-white border rounded-2xl p-4 shadow-sm space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <SocialIcon name={networkKey} size={18} />
+                    {directionLabel}
+                  </div>
+                  <span
+                    className={`text-xs font-semibold ${
+                      summary.direction === "down" ? "text-rose-500" : "text-emerald-600"
+                    }`}
+                  >
+                    {deltaDisplay}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 leading-snug">{description}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-semibold text-xl">{t("trendViews")}</h3>
@@ -184,7 +214,9 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
-        <h3 className="font-semibold mb-6 text-xl">Top contenus ({t("topContent")})</h3>
+        <h3 className="font-semibold mb-6 text-xl">
+          {t("dashboard.topContentHeading")}
+        </h3>
         {overviewError && (
           <div className="mb-4 text-sm text-amber-600">
             {overviewError}
