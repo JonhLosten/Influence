@@ -94,6 +94,19 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
   type DashboardPost = MockPost & { url?: string };
 
   const postsForDisplay = React.useMemo<DashboardPost[]>(() => {
+    if (snapshot?.topPosts?.length) {
+      return snapshot.topPosts.map((p) => ({
+        id: p.id,
+        title: p.title || `${network.toUpperCase()} Post`,
+        network: (p.network as NetworkName) ?? network,
+        thumbnailUrl:
+          p.thumbnail || `https://picsum.photos/seed/${p.network}-${p.id}/300/200`,
+        engagementRate: p.engagementRate ?? 0,
+        views: p.views ?? p.impressions ?? 0,
+        date: p.publishedAt ?? new Date().toISOString(),
+        url: p.url,
+      }));
+    }
     if (snapshot?.posts?.length) {
       return snapshot.posts
         .map((p) => ({

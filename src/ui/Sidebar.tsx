@@ -1,5 +1,5 @@
 import React from "react";
-import { t } from "../i18n";
+import { useLanguage } from "../i18n";
 import {
   useAppState,
   NetworkName,
@@ -11,23 +11,33 @@ import { AddFolderModal } from "../components/AddFolderModal";
 import { AddAccountModal } from "../components/AddAccountModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 
-type Route = "dashboard" | "instagram" | "facebook" | "tiktok" | "youtube" | "settings";
-const allNetworks: NetworkName[] = ["instagram", "facebook", "tiktok", "youtube"];
+export type Route =
+  | "dashboard"
+  | "instagram"
+  | "facebook"
+  | "tiktok"
+  | "youtube"
+  | "settings";
 
-/* ---------- Petite ligne de compte, aérée ---------- */
+interface AccountRowProps {
+  id: string;
+  network: NetworkName;
+  displayName: string;
+  folder: string;
+  onDelete: (id: string) => void;
+  deleteLabel: string;
+  deleteTooltip: string;
+}
+
 function AccountRow({
   id,
   network,
   displayName,
   folder,
   onDelete,
-}: {
-  id: string;
-  network: NetworkName;
-  displayName: string;
-  folder: string;
-  onDelete: (id: string) => void;
-}) {
+  deleteLabel,
+  deleteTooltip,
+}: AccountRowProps) {
   return (
     <div className="group flex items-center justify-between px-2 py-1 rounded hover:bg-blue-50">
       <div className="flex items-center gap-2">
@@ -39,9 +49,9 @@ function AccountRow({
         <button
           className="opacity-0 group-hover:opacity-100 text-xs text-red-600 hover:underline"
           onClick={() => onDelete(id)}
-          title="Supprimer ce compte"
+          title={deleteTooltip}
         >
-          Suppr.
+          {deleteLabel}
         </button>
       </div>
     </div>
@@ -56,18 +66,11 @@ export function Sidebar({
   onNavigate: (r: Route) => void;
 }) {
   const {
-    state: { networkOrder, accounts, folders, activeFolder, lang },
-    actions: {
-      reorderNetworks,
-      addAccount,
-      removeAccount,
-      addFolder,
-      removeFolder,
-      setActiveFolder,
-    },
+    state: { networkOrder, accounts, folders, activeFolder },
+    actions: { reorderNetworks, addAccount, removeAccount, addFolder, removeFolder, setActiveFolder },
   } = useAppState();
+  const { t, lang } = useLanguage();
 
-  /* ---------- États UI ---------- */
   const [openGroups, setOpenGroups] = React.useState<Record<NetworkName, boolean>>({
     instagram: true,
     facebook: true,
@@ -75,7 +78,6 @@ export function Sidebar({
     youtube: true,
   });
 
-  // Modales centralisées
   const [showChooser, setShowChooser] = React.useState(false);
   const [showAddFolder, setShowAddFolder] = React.useState(false);
   const [showAddAccount, setShowAddAccount] = React.useState(false);
@@ -85,7 +87,6 @@ export function Sidebar({
     label: string;
   } | null>(null);
 
-  /* ---------- Drag & drop réseaux (poignée dédiée) ---------- */
   const dragIndex = React.useRef<number | null>(null);
   function onDragStart(idx: number) {
     dragIndex.current = idx;
@@ -100,9 +101,6 @@ export function Sidebar({
     }
   }
 
-  const isNetwork = (r: string): r is NetworkName =>
-    allNetworks.includes(r as NetworkName);
-
   function toggleGroup(n: NetworkName) {
     setOpenGroups((g) => ({ ...g, [n]: !g[n] }));
   }
@@ -113,7 +111,9 @@ export function Sidebar({
     else setShowAddFolder(true);
   }
 
-  /* ---------- Header compact ---------- */
+  const deleteAccountLabel = t("sidebar.deleteShort");
+  const deleteAccountTooltip = t("sidebar.deleteAccountTooltip");
+
   function Header() {
     return (
       <>
@@ -121,13 +121,15 @@ export function Sidebar({
 
         <div className="mb-3 space-y-2">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Dossier actif</label>
+            <label className="block text-xs text-gray-500 mb-1">
+              {t("sidebar.activeFolder")}
+            </label>
             <select
               className="w-full border rounded-lg px-2 py-1 text-sm"
               value={activeFolder ?? ""}
               onChange={(e) => setActiveFolder(e.target.value || undefined)}
             >
-              <option value="">Tous les dossiers</option>
+              <option value="">{t("sidebar.allFolders")}</option>
               {folders.map((f) => (
                 <option key={f} value={f}>
                   {f}
@@ -139,10 +141,11 @@ export function Sidebar({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onNavigate("dashboard")}
-              className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border ${route === "dashboard"
+              className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                route === "dashboard"
                   ? "bg-blue-600 text-white border-blue-600"
                   : "bg-white hover:bg-blue-50 text-gray-800"
-                }`}
+              }`}
               title={t("nav.dashboard")}
             >
               <SocialIcon name="default" size={18} />
@@ -151,10 +154,11 @@ export function Sidebar({
 
             <button
               onClick={() => onNavigate("settings")}
-              className={`px-3 py-2 rounded-lg border ${route === "settings"
+              className={`px-3 py-2 rounded-lg border ${
+                route === "settings"
                   ? "bg-blue-600 text-white border-blue-600"
                   : "bg-white hover:bg-blue-50 text-gray-700"
-                }`}
+              }`}
               title={t("nav.settings")}
             >
               ⚙
@@ -167,7 +171,6 @@ export function Sidebar({
     );
   }
 
-  /* ---------- Groupe réseau (aéré) ---------- */
   function NetworkGroup({ n, idx }: { n: NetworkName; idx: number }) {
     const listAll = getAccountsByNetwork(accounts, n);
     const list = activeFolder ? listAll.filter((a) => a.folder === activeFolder) : listAll;
@@ -175,21 +178,22 @@ export function Sidebar({
 
     return (
       <div className="bg-white border rounded-xl">
-        {/* En-tête réseau : chevron + titre + compteur + poignée de drag */}
         <div className="flex items-center">
           <button
             onClick={() => {
               toggleGroup(n);
               onNavigate(n as Route);
             }}
-            className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl ${route === n ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-800"
-              }`}
-            title="Ouvrir/fermer"
+            className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl ${
+              route === n ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-800"
+            }`}
+            title={t("sidebar.toggleGroup")}
           >
             <span className="flex items-center gap-2">
               <span
-                className={`inline-block transition-transform ${openGroups[n] ? "rotate-90" : "rotate-0"
-                  }`}
+                className={`inline-block transition-transform ${
+                  openGroups[n] ? "rotate-90" : "rotate-0"
+                }`}
               >
                 ▶
               </span>
@@ -197,32 +201,31 @@ export function Sidebar({
               <span className="capitalize">{t(("nav." + n) as any)}</span>
             </span>
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${route === n ? "bg-white/20" : "bg-gray-100"
-                }`}
-              title="Nombre de comptes"
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                route === n ? "bg-white/20" : "bg-gray-100"
+              }`}
+              title={t("sidebar.accountCountTooltip")}
             >
               {count}
             </span>
           </button>
 
-          {/* Poignée drag (seule élément draggable) */}
           <div
             draggable
             onDragStart={() => onDragStart(idx)}
             onDragOver={onDragOver}
             onDrop={() => onDrop(idx)}
             className="px-2 py-2 cursor-grab select-none text-gray-400 hover:text-gray-600"
-            title="Glisser pour réordonner les réseaux"
+            title={t("sidebar.reorder")}
           >
             ≡
           </div>
         </div>
 
-        {/* Liste des comptes (aérée) */}
         {openGroups[n] && (
           <div className="p-2 space-y-1">
             {count === 0 ? (
-              <div className="text-xs text-gray-500 px-2 py-1">Aucun compte.</div>
+              <div className="text-xs text-gray-500 px-2 py-1">{t("sidebar.empty")}</div>
             ) : (
               list.map((a) => (
                 <AccountRow
@@ -235,9 +238,11 @@ export function Sidebar({
                     setPendingDelete({
                       type: "account",
                       idOrName: id,
-                      label: `Supprimer le compte « ${a.displayName} » ?`,
+                      label: t("sidebar.confirmAccount", { name: a.displayName }),
                     })
                   }
+                  deleteLabel={deleteAccountLabel}
+                  deleteTooltip={deleteAccountTooltip}
                 />
               ))
             )}
@@ -257,17 +262,16 @@ export function Sidebar({
         ))}
       </div>
 
-      {/* Barre fixe en bas : un seul bouton “+” (évite les doublons visuels) */}
       <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 mt-4">
         <div className="h-px bg-gray-200 mb-3" />
         <div className="flex items-center justify-between">
           <button
             onClick={() => setShowChooser(true)}
             className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow"
-            title="Ajouter un compte ou un dossier"
+            title={t("sidebar.addTooltip")}
           >
             <span className="text-lg leading-none">＋</span>
-            <span>Ajouter</span>
+            <span>{t("sidebar.addButton")}</span>
           </button>
 
           <span className="text-xs text-gray-500">
@@ -276,7 +280,6 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Modales */}
       <AddThingModal
         isOpen={showChooser}
         onClose={() => setShowChooser(false)}
@@ -299,11 +302,13 @@ export function Sidebar({
           addAccount({ network, displayName, folder });
           setActiveFolder(folder);
         }}
+        existing={accounts}
+        availableFolders={folders}
       />
 
       <ConfirmDialog
         isOpen={!!pendingDelete}
-        title="Confirmer la suppression"
+        title={t("sidebar.confirmTitle")}
         message={pendingDelete?.label || ""}
         onCancel={() => setPendingDelete(null)}
         onConfirm={() => {

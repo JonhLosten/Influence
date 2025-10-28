@@ -1,12 +1,8 @@
 import React from "react";
-import { t } from "../i18n";
-import { useAppState } from "../store/useAppState";
+import { useLanguage } from "../i18n";
 
 export function Settings() {
-  const {
-    state: { lang },
-    actions: { setLang },
-  } = useAppState();
+  const { lang, setLang, t } = useLanguage();
 
   function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const v = e.target.value === "en" ? "en" : "fr";
@@ -23,9 +19,7 @@ export function Settings() {
           <option value="en">{t("settings.language.en")}</option>
         </select>
       </label>
-      <p className="text-xs text-gray-500">
-        Cette préférence est enregistrée et appliquée à chaque lancement.
-      </p>
+      <p className="text-xs text-gray-500">{t("settings.language.persisted")}</p>
     </div>
   );
 }
