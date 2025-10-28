@@ -9,17 +9,18 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { getDashboardData, PeriodDays } from "./_dataMock";
+import { getDashboardData, PeriodDays, MockPost } from "./_dataMock";
 import {
   useAppState,
   NetworkName,
   getAccountsByNetwork,
 } from "../store/useAppState";
 import { SocialIcon } from "../components/SocialIcon";
+import { fetchNetworkSnapshot } from "../services/analytics";
 
-/** Périodes disponibles côté UI */
+export type NetworkSnapshot = Awaited<ReturnType<typeof fetchNetworkSnapshot>>;
+
 type Period = "7d" | "30d" | "90d" | "365d" | "all";
-/** Map UI -> nombre de jours pour le mock */
 const periodToDays: Record<Period, PeriodDays> = {
   "7d": 7,
   "30d": 30,
@@ -28,7 +29,6 @@ const periodToDays: Record<Period, PeriodDays> = {
   all: "all",
 };
 
-/** Couleurs par réseau (cohérentes avec le Dashboard global) */
 const colorMap: Record<NetworkName, string> = {
   instagram: "#e4405f",
   facebook: "#1877f2",
@@ -37,41 +37,105 @@ const colorMap: Record<NetworkName, string> = {
 };
 
 export function NetworkDashboard({ network }: { network: NetworkName }) {
-  /** période active */
   const [period, setPeriod] = React.useState<Period>("7d");
-  /** données agrégées pour CE réseau (mock filtré côté _dataMock) */
   const [data, setData] = React.useState(() =>
     getDashboardData(periodToDays["7d"], network)
   );
+  const [snapshot, setSnapshot] = React.useState<NetworkSnapshot | null>(null);
+  const [loadingSnapshot, setLoadingSnapshot] = React.useState(false);
+  const [snapshotError, setSnapshotError] = React.useState<string | null>(null);
 
-  /** accès aux comptes pour lister ceux du réseau */
   const {
     state: { accounts },
   } = useAppState();
   const accountsOfNetwork = getAccountsByNetwork(accounts, network);
 
-  /** recharge la série et le top quand la période change */
   React.useEffect(() => {
     const next = getDashboardData(periodToDays[period], network);
     setData(next);
   }, [period, network]);
 
-  /** format court pour l’axe des dates */
+  React.useEffect(() => {
+    let cancelled = false;
+    const range = periodToDays[period];
+    const days = range === "all" ? 365 : range;
+    setLoadingSnapshot(true);
+    setSnapshotError(null);
+    fetchNetworkSnapshot(network, days)
+      .then((payload) => {
+        if (!cancelled) {
+          setSnapshot(payload);
+          setLoadingSnapshot(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error(`Failed to load snapshot for ${network}`, err);
+          setSnapshot(null);
+          setSnapshotError(err instanceof Error ? err.message : String(err));
+          setLoadingSnapshot(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [network, period]);
+
   const fmtDate = (isoDate: string) =>
     `${isoDate.slice(8, 10)}/${isoDate.slice(5, 7)}`;
 
-  /** totaux de vues pour ce réseau sur la période */
-  const totalViews = React.useMemo(
-    () => data.trendStack.reduce((s, d) => s + (d[network] as number), 0),
-    [data.trendStack, network]
-  );
+  const totalViews = React.useMemo(() => {
+    if (snapshot?.profile.views) {
+      return snapshot.profile.views;
+    }
+    return data.trendStack.reduce((s, d) => s + (d[network] as number), 0);
+  }, [snapshot, data.trendStack, network]);
 
-  /** KPI simulés (remplace facilement par de vraies métriques) */
+  type DashboardPost = MockPost & { url?: string };
+
+  const postsForDisplay = React.useMemo<DashboardPost[]>(() => {
+    if (snapshot?.posts?.length) {
+      return snapshot.posts
+        .map((p) => ({
+          id: p.id,
+          title: p.title || `${network.toUpperCase()} Post`,
+          network: (p.network as NetworkName) ?? network,
+          thumbnailUrl:
+            p.thumbnail || `https://picsum.photos/seed/${p.network}-${p.id}/300/200`,
+          engagementRate: p.engagementRate ?? 0,
+          views: p.views ?? p.impressions ?? 0,
+          date: p.publishedAt ?? new Date().toISOString(),
+          url: p.url,
+        }))
+        .sort((a, b) => (b.engagementRate || 0) - (a.engagementRate || 0))
+        .slice(0, 6);
+    }
+    return data.topPosts.map((post) => ({ ...post, url: "#" }));
+  }, [snapshot, data.topPosts, network]);
+
+  const averageEngagement = React.useMemo(() => {
+    if (snapshot?.profile.engagementRate !== undefined) {
+      return snapshot.profile.engagementRate;
+    }
+    if (snapshot?.posts?.length) {
+      const sum = snapshot.posts.reduce(
+        (acc, p) => acc + (p.engagementRate ?? 0),
+        0
+      );
+      return sum / snapshot.posts.length;
+    }
+    if (data.topPosts.length) {
+      const sum = data.topPosts.reduce((acc, p) => acc + p.engagementRate, 0);
+      return sum / data.topPosts.length;
+    }
+    return 0;
+  }, [snapshot, data.topPosts]);
+
   const kpis = [
     { label: "Vues", value: totalViews.toLocaleString() },
     {
       label: "Posts (période)",
-      value: data.topPosts.length.toString(),
+      value: (snapshot?.posts?.length ?? data.topPosts.length).toString(),
     },
     {
       label: "Comptes rattachés",
@@ -79,16 +143,12 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     },
     {
       label: "Engagement moyen",
-      value: `${(6 + Math.random() * 4).toFixed(1)}%`,
+      value: `${(averageEngagement * 100).toFixed(1)}%`,
     },
   ];
 
-  /** top contenus (déjà filtrés par réseau et période dans _dataMock) */
-  const topPosts = data.topPosts;
-
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen overflow-auto">
-      {/* ======= En-tête + sélecteur d’horizon ======= */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <SocialIcon name={network} size={28} />
@@ -108,16 +168,16 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
             <option value="all">Depuis toujours</option>
           </select>
 
-          {/* “pills” rapides (optionnel) */}
           <div className="hidden md:flex gap-2">
             {(["7d", "30d", "90d", "365d", "all"] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-3 py-1 rounded-lg text-sm border ${period === p
+                className={`px-3 py-1 rounded-lg text-sm border ${
+                  period === p
                     ? "bg-blue-600 text-white border-blue-600"
                     : "bg-white hover:bg-blue-50"
-                  }`}
+                }`}
               >
                 {p.toUpperCase()}
               </button>
@@ -126,7 +186,6 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         </div>
       </div>
 
-      {/* ======= KPI ======= */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {kpis.map((k) => (
           <div
@@ -139,7 +198,6 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         ))}
       </div>
 
-      {/* ======= Graphique barres (vues de CE réseau) ======= */}
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-4 text-lg">
           Tendances des vues • {period.toUpperCase()}
@@ -164,21 +222,24 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         </div>
       </div>
 
-      {/* ======= Top contenus de la plateforme ======= */}
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-6 text-xl">
           Top contenus ({network}) — période {period.toUpperCase()}
         </h3>
-        {topPosts.length === 0 ? (
-          <p className="text-gray-500 text-sm">
-            Aucun contenu sur cette période.
-          </p>
+        {loadingSnapshot && (
+          <p className="text-gray-500 text-sm">Chargement des contenus…</p>
+        )}
+        {snapshotError && (
+          <p className="text-amber-600 text-sm mb-3">{snapshotError}</p>
+        )}
+        {postsForDisplay.length === 0 ? (
+          <p className="text-gray-500 text-sm">Aucun contenu sur cette période.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {topPosts.map((p) => (
+            {postsForDisplay.map((p) => (
               <a
                 key={p.id}
-                href="#"
+                href={p.url || "#"}
                 className="border rounded-xl overflow-hidden hover:shadow-lg transition bg-gray-50"
               >
                 <img
@@ -201,8 +262,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
                     {p.title}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    {new Date(p.date).toLocaleDateString()} •{" "}
-                    {p.views.toLocaleString()} vues
+                    {new Date(p.date).toLocaleDateString()} • {p.views.toLocaleString()} vues
                   </div>
                 </div>
               </a>
@@ -211,7 +271,6 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         )}
       </div>
 
-      {/* ======= Comptes rattachés à ce réseau ======= */}
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-4 text-lg">
           Comptes ({network}) rattachés

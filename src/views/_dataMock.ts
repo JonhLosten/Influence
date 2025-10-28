@@ -1,16 +1,8 @@
 import { NetworkName } from "../store/useAppState";
 
-/**
- * Génère une valeur pseudo-aléatoire stable (en fonction du seed)
- */
-function prng(seed: number) {
-  let x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
+export type PeriodDays = number | "all";
 
-const networks: NetworkName[] = ["instagram", "facebook", "tiktok", "youtube"];
-
-export type TrendDay = {
+type TrendDay = {
   date: string;
   instagram: number;
   facebook: number;
@@ -29,13 +21,16 @@ export type MockPost = {
   date: string;
 };
 
-/**
- * Fonction principale : renvoie un jeu de données complet selon la période.
- */
-export function getDashboardData(days: number | "all" = 7) {
-  const today = new Date();
-  const totalDays = days === "all" ? 730 : days; // "Depuis toujours" = ~2 ans
+const networks: NetworkName[] = ["instagram", "facebook", "tiktok", "youtube"];
 
+function prng(seed: number) {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+export function getDashboardData(days: PeriodDays = 7, focusNetwork?: NetworkName) {
+  const today = new Date();
+  const totalDays = days === "all" ? 730 : days;
   const series: TrendDay[] = [];
 
   for (let i = totalDays - 1; i >= 0; i--) {
@@ -53,7 +48,6 @@ export function getDashboardData(days: number | "all" = 7) {
     series.push({ date: label, ...values, total });
   }
 
-  // Mock posts (par plateforme)
   const posts: MockPost[] = [];
   for (let i = 0; i < 60; i++) {
     const net = networks[i % networks.length];
@@ -69,16 +63,29 @@ export function getDashboardData(days: number | "all" = 7) {
     });
   }
 
-  // Top contenus selon la période
+  const activeNetworks = focusNetwork ? [focusNetwork] : networks;
+
   const cutoff =
     days === "all"
       ? 0
       : +today - (typeof days === "number" ? days : 7) * 86400000;
 
   const topPosts = posts
+    .filter((p) => activeNetworks.includes(p.network))
     .filter((p) => new Date(p.date).getTime() >= cutoff)
     .sort((a, b) => b.views - a.views)
     .slice(0, 6);
+
+  const trendStack = focusNetwork
+    ? series.map((item) => ({
+        date: item.date,
+        instagram: focusNetwork === "instagram" ? item.instagram : 0,
+        facebook: focusNetwork === "facebook" ? item.facebook : 0,
+        tiktok: focusNetwork === "tiktok" ? item.tiktok : 0,
+        youtube: focusNetwork === "youtube" ? item.youtube : 0,
+        total: item[focusNetwork],
+      }))
+    : series;
 
   return {
     summary: [
@@ -87,9 +94,9 @@ export function getDashboardData(days: number | "all" = 7) {
       { label: "TikTok", value: "tiktok" },
       { label: "YouTube", value: "youtube" },
     ],
-    trendStack: series,
+    trendStack,
     topPosts,
-    horizons: [7, 30, 90, 365, "all"],
+    horizons: [7, 30, 90, 365, "all" as const],
     networks,
   };
 }

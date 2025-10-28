@@ -1,5 +1,5 @@
 import React from "react";
-import { t, getLang } from "../i18n";
+import { t } from "../i18n";
 import {
   useAppState,
   NetworkName,
@@ -56,7 +56,7 @@ export function Sidebar({
   onNavigate: (r: Route) => void;
 }) {
   const {
-    state: { networkOrder, accounts, folders, activeFolder },
+    state: { networkOrder, accounts, folders, activeFolder, lang },
     actions: {
       reorderNetworks,
       addAccount,
@@ -271,7 +271,7 @@ export function Sidebar({
           </button>
 
           <span className="text-xs text-gray-500">
-            {t("nav.settings")} • {getLang().toUpperCase()}
+            {t("nav.settings")} • {lang.toUpperCase()}
           </span>
         </div>
       </div>
