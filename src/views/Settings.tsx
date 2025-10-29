@@ -1,12 +1,21 @@
 import React from "react";
 import { useLanguage } from "../i18n";
+import { useAppState } from "../store/useAppState";
 
 export function Settings() {
   const { lang, setLang, t } = useLanguage();
+  const {
+    state: { preferences },
+    actions: { setDemoDataEnabled },
+  } = useAppState();
 
   function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const v = e.target.value === "en" ? "en" : "fr";
     setLang(v);
+  }
+
+  function onToggleDemo(e: React.ChangeEvent<HTMLInputElement>) {
+    setDemoDataEnabled(e.target.checked);
   }
 
   return (
@@ -20,6 +29,32 @@ export function Settings() {
         </select>
       </label>
       <p className="text-xs text-gray-500">{t("settings.language.persisted")}</p>
+
+      <div className="border-t pt-3 mt-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-gray-600 font-medium">
+              {t("settings.demoData")}
+            </div>
+            <p className="text-xs text-gray-500">
+              {t("settings.demoData.description")}
+            </p>
+          </div>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={preferences.demoDataEnabled}
+              onChange={onToggleDemo}
+              className="w-4 h-4"
+            />
+            <span>
+              {preferences.demoDataEnabled
+                ? t("settings.demoData.enabled")
+                : t("settings.demoData.disabled")}
+            </span>
+          </label>
+        </div>
+      </div>
     </div>
   );
 }

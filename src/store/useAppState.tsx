@@ -9,11 +9,16 @@ export interface Account {
   folder: string; // nom du dossier
 }
 
+interface Preferences {
+  demoDataEnabled: boolean;
+}
+
 interface AppState {
   networkOrder: NetworkName[];
   accounts: Account[];
   folders: string[]; // <— ajouté
   activeFolder?: string;
+  preferences: Preferences;
 }
 
 interface AppActions {
@@ -23,6 +28,7 @@ interface AppActions {
   addFolder: (name: string) => void;
   removeFolder: (name: string) => void;
   setActiveFolder: (folder?: string) => void;
+  setDemoDataEnabled: (enabled: boolean) => void;
 }
 
 interface AppContextType {
@@ -44,6 +50,34 @@ function createId() {
   return `${time}-${rand}`;
 }
 
+const PREFERENCES_KEY = "influenceops.preferences";
+
+function readStoredPreferences(): Preferences {
+  if (typeof window === "undefined") {
+    return { demoDataEnabled: false };
+  }
+  try {
+    const raw = window.localStorage.getItem(PREFERENCES_KEY);
+    if (!raw) return { demoDataEnabled: false };
+    const parsed = JSON.parse(raw) as Partial<Preferences>;
+    return {
+      demoDataEnabled: Boolean(parsed.demoDataEnabled),
+    };
+  } catch (err) {
+    console.warn("useAppState: unable to read preferences", err);
+    return { demoDataEnabled: false };
+  }
+}
+
+function persistPreferences(preferences: Preferences) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
+  } catch (err) {
+    console.warn("useAppState: unable to persist preferences", err);
+  }
+}
+
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -52,6 +86,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     accounts: [],
     folders: ["Par défaut"], // <— un dossier par défaut
     activeFolder: undefined,
+    preferences: readStoredPreferences(),
   }));
 
   const reorderNetworks = (from: number, to: number) => {
@@ -98,6 +133,17 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     setState((s) => ({ ...s, activeFolder: folder }));
   };
 
+  const setDemoDataEnabled = (enabled: boolean) => {
+    setState((s) => {
+      const next: AppState = {
+        ...s,
+        preferences: { ...s.preferences, demoDataEnabled: enabled },
+      };
+      persistPreferences(next.preferences);
+      return next;
+    });
+  };
+
   const value = useMemo<AppContextType>(
     () => ({
       state,
@@ -108,6 +154,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         addFolder,
         removeFolder,
         setActiveFolder,
+        setDemoDataEnabled,
       },
     }),
     [state]

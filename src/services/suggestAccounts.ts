@@ -1,4 +1,5 @@
 import { NetworkName } from "../store/useAppState";
+import { resolveApiUrl } from "./api";
 
 type Suggestion = {
   network: NetworkName;
@@ -181,54 +182,38 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
     return cached;
   }
 
-  let search = query.trim();
-  switch (network) {
-    case "youtube":
-      search += " site:youtube.com/@ OR site:youtube.com/channel";
-      break;
-    case "instagram":
-      search += " site:instagram.com";
-      break;
-    case "facebook":
-      search += " site:facebook.com";
-      break;
-    case "tiktok":
-      search += " site:tiktok.com/@";
-      break;
-  }
-
-  const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(search)}&format=json&no_redirect=1&no_html=1`;
-
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const url = resolveApiUrl(
+      `/api/suggest?network=${encodeURIComponent(network)}&q=${encodeURIComponent(query)}`
+    );
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
 
-    if (!res.ok) throw new Error(`DuckDuckGo ${res.status}`);
+    if (!res.ok) throw new Error(`suggest ${res.status}`);
 
-    const data = await res.json();
-    const related = Array.isArray(data?.RelatedTopics) ? data.RelatedTopics : [];
-    const results = related
-      .filter((r: any) => r?.FirstURL && r?.Text)
-      .slice(0, 6)
-      .map((r: any) => {
-        const displayName = cleanTitle(r.Text);
-        const handle =
-          extractHandleFromUrl(r.FirstURL) || extractHandleFromText(r.Text) || displayName;
-        return {
+    const payload = await res.json();
+    const items: Suggestion[] | undefined = Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload)
+      ? payload
+      : undefined;
+
+    if (items?.length) {
+      const normalised = items
+        .filter((item) => item && item.handle)
+        .slice(0, 10)
+        .map((item) => ({
+          ...item,
           network,
-          displayName,
-          handle,
-          followers: deterministicFollowers(handle),
-          avatar: guessDefaultAvatar(network),
-          url: r.FirstURL,
-        } satisfies Suggestion;
-      });
-
-    if (results.length > 0) {
-      storeSuggestions(network, query, results);
-      return results;
+          followers: item.followers ?? deterministicFollowers(item.handle),
+          avatar: item.avatar || guessDefaultAvatar(network),
+        }));
+      if (normalised.length) {
+        storeSuggestions(network, query, normalised);
+        return normalised;
+      }
     }
   } catch (err) {
     console.warn("suggestAccounts: fallback to offline dataset", err);
@@ -239,16 +224,4 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
   return fallback;
 }
 
-function cleanTitle(title: string): string {
-  return title.replace(/\s*[-|–]\s*(YouTube|TikTok|Instagram|Facebook).*/i, "").trim();
-}
-
-function extractHandleFromUrl(url: string): string | null {
-  const match = url.match(/@[\w.-]+/);
-  return match ? match[0] : null;
-}
-
-function extractHandleFromText(text: string): string | null {
-  const match = text.match(/@[\w.-]+/);
-  return match ? match[0] : null;
-}
+// Les fonctions d'analyse DuckDuckGo sont désormais exécutées côté serveur.
