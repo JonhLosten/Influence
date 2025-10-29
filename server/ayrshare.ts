@@ -1,4 +1,5 @@
 import type { Network } from "./types";
+import { buildYoutubePosts, buildYoutubeProfile } from "./youtube";
 
 const AYR_BASE = "https://app.ayrshare.com/api";
 const API_KEY = process.env.AYRSHARE_API_KEY;
@@ -23,6 +24,18 @@ function deterministicRange(random: () => number, min: number, max: number) {
 
 async function ayr(path: string, init: RequestInit = {}) {
   if (!API_KEY) {
+    const url = new URL(path, "https://demo.influenceops.local");
+    const network = (url.searchParams.get("network") as Network) || "instagram";
+    if (network === "youtube") {
+      if (path.startsWith("/analytics/social")) {
+        const days = clampDays(Number(url.searchParams.get("days") || "30"));
+        return buildYoutubeProfile(days);
+      }
+      if (path.startsWith("/analytics/posts")) {
+        const days = clampDays(Number(url.searchParams.get("days") || "30"));
+        return buildYoutubePosts(days);
+      }
+    }
     return demo(path);
   }
   const res = await fetch(`${AYR_BASE}${path}`, {

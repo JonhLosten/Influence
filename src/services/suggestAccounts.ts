@@ -99,14 +99,19 @@ function deterministicFollowers(handle: string): number {
   return base;
 }
 
-function guessDefaultAvatar(network: NetworkName): string {
-  const logos: Record<NetworkName, string> = {
+function guessDefaultAvatar(network: NetworkName, handle?: string): string {
+  const fallbackLogos: Record<NetworkName, string> = {
     youtube: "/logos/youtube.svg",
     instagram: "/logos/instagram.svg",
     facebook: "/logos/facebook.svg",
     tiktok: "/logos/tiktok.svg",
   };
-  return logos[network];
+  const cleanHandle = handle?.replace(/^@/, "");
+  if (cleanHandle) {
+    const provider = network === "youtube" ? "youtube" : network;
+    return `https://unavatar.io/${provider}/${encodeURIComponent(cleanHandle)}`;
+  }
+  return fallbackLogos[network];
 }
 
 function filterFallback(network: NetworkName, query: string) {
@@ -208,7 +213,7 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
           ...item,
           network,
           followers: item.followers ?? deterministicFollowers(item.handle),
-          avatar: item.avatar || guessDefaultAvatar(network),
+          avatar: item.avatar || guessDefaultAvatar(network, item.handle),
         }));
       if (normalised.length) {
         storeSuggestions(network, query, normalised);
@@ -220,8 +225,23 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
   }
 
   const fallback = filterFallback(network, query);
-  storeSuggestions(network, query, fallback);
-  return fallback;
+  if (fallback.length) {
+    storeSuggestions(network, query, fallback);
+    return fallback;
+  }
+
+  const fallbackHandle = query.trim().startsWith("@")
+    ? query.trim()
+    : `@${query.trim().replace(/\s+/g, "")}`;
+  const synthetic = {
+    network,
+    displayName: query.trim(),
+    handle: fallbackHandle,
+    followers: deterministicFollowers(fallbackHandle),
+    avatar: guessDefaultAvatar(network, fallbackHandle),
+  } satisfies Suggestion;
+  storeSuggestions(network, query, [synthetic]);
+  return [synthetic];
 }
 
 // Les fonctions d'analyse DuckDuckGo sont désormais exécutées côté serveur.

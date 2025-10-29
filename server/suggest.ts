@@ -1,4 +1,5 @@
 import type { Network } from "./types";
+import { searchYoutubeChannels } from "./youtube";
 
 export interface SuggestionPayload {
   network: Network;
@@ -88,14 +89,19 @@ function deterministicFollowers(handle: string): number {
   return 500 + (hash % 20000);
 }
 
-function guessDefaultAvatar(network: Network): string {
-  const logos: Record<Network, string> = {
+function guessDefaultAvatar(network: Network, handle?: string): string {
+  const fallbackLogos: Record<Network, string> = {
     youtube: "/logos/youtube.svg",
     instagram: "/logos/instagram.svg",
     facebook: "/logos/facebook.svg",
     tiktok: "/logos/tiktok.svg",
   };
-  return logos[network];
+  const cleanHandle = handle?.replace(/^@/, "");
+  if (cleanHandle) {
+    const provider = network === "youtube" ? "youtube" : network;
+    return `https://unavatar.io/${provider}/${encodeURIComponent(cleanHandle)}`;
+  }
+  return fallbackLogos[network];
 }
 
 function filterFallback(network: Network, query: string) {
@@ -107,20 +113,6 @@ function filterFallback(network: Network, query: string) {
   );
 }
 
-function cleanTitle(title: string): string {
-  return title.replace(/\s*[-|–]\s*(YouTube|TikTok|Instagram|Facebook).*/i, "").trim();
-}
-
-function extractHandleFromUrl(url: string): string | null {
-  const match = url.match(/@[\w.-]+/);
-  return match ? match[0] : null;
-}
-
-function extractHandleFromText(text: string): string | null {
-  const match = text.match(/@[\w.-]+/);
-  return match ? match[0] : null;
-}
-
 export async function fetchSuggestions(
   network: Network,
   query: string
@@ -128,73 +120,31 @@ export async function fetchSuggestions(
   const trimmed = query.trim();
   if (!trimmed) return [];
 
-  let search = trimmed;
-  switch (network) {
-    case "youtube":
-      search += " site:youtube.com/@ OR site:youtube.com/channel";
-      break;
-    case "instagram":
-      search += " site:instagram.com";
-      break;
-    case "facebook":
-      search += " site:facebook.com";
-      break;
-    case "tiktok":
-      search += " site:tiktok.com/@";
-      break;
-  }
-
-  const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(
-    search
-  )}&format=json&no_redirect=1&no_html=1`;
-
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
-    const res = await fetch(ddgUrl, { signal: controller.signal });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      const related = Array.isArray(data?.RelatedTopics) ? data.RelatedTopics : [];
-      const results = related
-        .filter((r: any) => r?.FirstURL && r?.Text)
-        .slice(0, 10)
-        .map((r: any) => {
-          const displayName = cleanTitle(r.Text);
-          const handle =
-            extractHandleFromUrl(r.FirstURL) || extractHandleFromText(r.Text) || displayName;
-          return {
-            network,
-            displayName,
-            handle,
-            followers: deterministicFollowers(handle),
-            avatar: guessDefaultAvatar(network),
-            url: r.FirstURL,
-          } satisfies SuggestionPayload;
-        })
-        .filter((item: SuggestionPayload) => Boolean(item.handle));
-
-      if (results.length > 0) {
-        return results;
+    if (network === "youtube") {
+      const youtubeResults = await searchYoutubeChannels(trimmed, 10);
+      if (youtubeResults.length) {
+        return youtubeResults;
       }
-    } else {
-      console.warn(`suggestions: DuckDuckGo ${res.status}`);
     }
   } catch (err) {
-    console.warn("suggestions: failed to query DuckDuckGo", err);
+    console.warn("suggestions: failed to fetch online dataset", err);
   }
 
   const fallback = filterFallback(network, query);
   if (fallback.length) return fallback;
 
+  const fallbackHandle = trimmed.startsWith("@")
+    ? trimmed
+    : `@${trimmed.replace(/\s+/g, "")}`;
+
   return [
     {
       network,
       displayName: trimmed,
-      handle: trimmed.startsWith("@") ? trimmed : `@${trimmed.replace(/\s+/g, "")}`,
-      followers: deterministicFollowers(trimmed),
-      avatar: guessDefaultAvatar(network),
+      handle: fallbackHandle,
+      followers: deterministicFollowers(fallbackHandle),
+      avatar: guessDefaultAvatar(network, fallbackHandle),
     },
   ];
 }
