@@ -1,7 +1,11 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { URL } from "url";
 import { createAnalyticsPipeline } from "./pipeline";
-import { getProfileAnalytics, getPostsAnalytics } from "./ayrshare";
+import {
+  getProfileAnalytics,
+  getPostsAnalytics,
+  MissingCredentialsError,
+} from "./ayrshare";
 import type { Network } from "./types";
 import { fetchSuggestions } from "./suggest";
 
@@ -85,6 +89,20 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
 
     sendJSON(res, 404, { error: "Not found" }, origin);
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      console.warn("Analytics request blocked: missing credentials", error.network);
+      sendJSON(
+        res,
+        503,
+        {
+          error: "Missing analytics credentials",
+          network: error.network,
+          code: "missing_credentials",
+        },
+        origin
+      );
+      return;
+    }
     console.error("Failed to handle analytics request", error);
     sendJSON(res, 500, { error: "Failed to compute analytics" }, origin);
   }

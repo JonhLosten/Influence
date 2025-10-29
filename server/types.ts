@@ -57,6 +57,7 @@ export interface NetworkSnapshot {
 export interface OverviewAnalytics {
   networks: Record<Network, number>;
   topPosts: NormalizedPost[];
-  summaries: Record<Network, AnalyticsSummary>;
+  summaries: Partial<Record<Network, AnalyticsSummary>>;
   trends: TrendPoint[];
+  unavailable?: Network[];
 }

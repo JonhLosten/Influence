@@ -53,8 +53,9 @@ export interface NetworkSnapshotResponse {
 export interface OverviewAnalytics {
   networks: Record<NetworkName, number>;
   topPosts: NormalizedPost[];
-  summaries: Record<NetworkName, AnalyticsSummary>;
+  summaries: Partial<Record<NetworkName, AnalyticsSummary>>;
   trends: TrendPoint[];
+  unavailable?: NetworkName[];
 }
 
 export async function fetchNetworkSnapshot(

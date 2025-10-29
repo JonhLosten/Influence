@@ -44,6 +44,7 @@
   "dashboard.error.apiUnavailable": "Unable to load live metrics. Check the server or enable demo data in settings.",
   "dashboard.error.demoDisabled": "Charts are hidden until demo data is enabled or a data source is connected.",
   "dashboard.error.noPosts": "No content is available for this selection.",
+  "dashboard.notice.partialUnavailable": "Live metrics are unavailable for {{networks}}. Enable demo data in settings to preview sample analytics.",
   "network.snapshot.error": "Unable to load {{network}} metrics. Try again or enable demo data.",
   "network.snapshot.empty": "No data is available for this period.",
   "network.snapshot.demoHint": "Enable demo data to preview a synthetic dataset.",

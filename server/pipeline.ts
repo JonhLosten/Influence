@@ -43,27 +43,43 @@ export function createAnalyticsPipeline(source: AnalyticsSource) {
   }
 
   async function fetchOverview(days: number): Promise<OverviewAnalytics> {
-    const snapshots = await Promise.all(
-      SUPPORTED_NETWORKS.map((network) => fetchSnapshot(network, days))
+    const snapshotTuples = await Promise.all(
+      SUPPORTED_NETWORKS.map(async (network) => {
+        try {
+          const snapshot = await fetchSnapshot(network, days);
+          return [network, snapshot] as const;
+        } catch (error) {
+          console.warn(`pipeline: unable to fetch snapshot for ${network}`, error);
+          return [network, null] as const;
+        }
+      })
     );
 
-    const networks = snapshots.reduce((acc, snapshot) => {
-      acc[snapshot.network] = snapshot.profile.views;
+    const availableSnapshots = snapshotTuples.filter(
+      (entry): entry is [Network, NetworkSnapshot] => entry[1] !== null
+    );
+
+    if (availableSnapshots.length === 0) {
+      throw new Error("No analytics available");
+    }
+
+    const networks = snapshotTuples.reduce((acc, [network, snapshot]) => {
+      acc[network] = snapshot ? snapshot.profile.views : 0;
       return acc;
     }, {} as OverviewAnalytics["networks"]);
 
-    const topPosts = snapshots
-      .flatMap((snapshot) => snapshot.topPosts)
+    const topPosts = availableSnapshots
+      .flatMap(([, snapshot]) => snapshot.topPosts)
       .sort((a, b) => (b.engagementRate ?? 0) - (a.engagementRate ?? 0))
       .slice(0, 9);
 
-    const summaries = snapshots.reduce((acc, snapshot) => {
-      acc[snapshot.network] = snapshot.summary;
+    const summaries = availableSnapshots.reduce((acc, [network, snapshot]) => {
+      acc[network] = snapshot.summary;
       return acc;
     }, {} as OverviewAnalytics["summaries"]);
 
     const aggregatedTrendMap = new Map<string, { views: number; samples: number }>();
-    snapshots.forEach((snapshot) => {
+    availableSnapshots.forEach(([, snapshot]) => {
       snapshot.trends.forEach((point) => {
         const prev = aggregatedTrendMap.get(point.date) ?? { views: 0, samples: 0 };
         aggregatedTrendMap.set(point.date, {
@@ -81,7 +97,11 @@ export function createAnalyticsPipeline(source: AnalyticsSource) {
         delta: 0,
       }));
 
-    return { networks, topPosts, summaries, trends };
+    const unavailable = snapshotTuples
+      .filter(([, snapshot]) => !snapshot)
+      .map(([network]) => network);
+
+    return { networks, topPosts, summaries, trends, unavailable };
   }
 
   return {

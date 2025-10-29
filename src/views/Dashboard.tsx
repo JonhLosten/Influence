@@ -131,6 +131,21 @@ export const Dashboard: React.FC = () => {
     overviewError === "api" ? t("dashboard.error.apiUnavailable") : null;
   const showDemoDisabledNotice =
     !demoEnabled && !overview && !demoData && !loading;
+  const unavailableNetworks = React.useMemo<NetworkName[]>(() => {
+    if (!overview?.unavailable?.length) {
+      return [];
+    }
+    return overview.unavailable.filter((network): network is NetworkName =>
+      Object.prototype.hasOwnProperty.call(networkColors, network)
+    );
+  }, [overview]);
+  const partialNotice = React.useMemo(() => {
+    if (!unavailableNetworks.length) return null;
+    const labels = unavailableNetworks
+      .map((network) => t(toNavKey(network)))
+      .join(", ");
+    return t("dashboard.notice.partialUnavailable", { networks: labels });
+  }, [t, unavailableNetworks]);
 
   type DisplayPost = MockPost & { url?: string };
 
@@ -475,6 +490,11 @@ export const Dashboard: React.FC = () => {
       {showDemoDisabledNotice && (
         <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-2xl">
           {t("dashboard.error.demoDisabled")}
+        </div>
+      )}
+      {!showDemoDisabledNotice && partialNotice && (
+        <div className="bg-sky-50 border border-sky-200 text-sky-800 px-4 py-3 rounded-2xl">
+          {partialNotice}
         </div>
       )}
 

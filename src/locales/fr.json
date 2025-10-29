@@ -44,6 +44,7 @@
   "dashboard.error.apiUnavailable": "Impossible de récupérer les indicateurs en direct. Vérifie le serveur ou active les données de démonstration dans les paramètres.",
   "dashboard.error.demoDisabled": "Les graphiques sont masqués tant que les données de démonstration sont désactivées et qu'aucune source n'est connectée.",
   "dashboard.error.noPosts": "Aucun contenu disponible pour cette sélection.",
+  "dashboard.notice.partialUnavailable": "Les indicateurs en direct sont indisponibles pour {{networks}}. Active les données de démonstration dans les paramètres pour afficher un aperçu.",
   "network.snapshot.error": "Impossible de charger les données {{network}}. Réessaie ou active les données de démonstration.",
   "network.snapshot.empty": "Aucune donnée disponible pour cette période.",
   "network.snapshot.demoHint": "Active les données de démonstration pour afficher un aperçu synthétique.",
