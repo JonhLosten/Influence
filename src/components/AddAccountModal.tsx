@@ -1,12 +1,27 @@
 import React from "react";
-import { NetworkName } from "../store/useAppState";
-import { suggestAccounts } from "../services/suggestAccounts";
+import {
+  NetworkName,
+  type AccountMetrics,
+  type YoutubeAccountMetrics,
+} from "../store/useAppState";
+import {
+  suggestAccounts,
+  type Suggestion,
+} from "../services/suggestAccounts";
 import { useLanguage } from "../i18n";
+import { fetchYoutubeChannelAnalytics } from "../services/youtube";
+
+interface AddPayload {
+  network: NetworkName;
+  displayName: string;
+  folder: string;
+  metrics?: AccountMetrics;
+}
 
 export const AddAccountModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (network: NetworkName, displayName: string, folder: string) => void;
+  onAdd: (payload: AddPayload) => Promise<void> | void;
   existing?: Array<{ network: NetworkName; displayName: string }>;
   availableFolders?: string[];
 }> = ({
@@ -20,15 +35,17 @@ export const AddAccountModal: React.FC<{
   const [network, setNetwork] = React.useState<NetworkName>("instagram");
   const [query, setQuery] = React.useState("");
   const [folder, setFolder] = React.useState(availableFolders[0] || "Par défaut");
-  const [results, setResults] = React.useState<any[]>([]);
+  const [results, setResults] = React.useState<Suggestion[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
       setQuery("");
       setResults([]);
       setMessage("");
+      setSaving(false);
     }
   }, [isOpen]);
 
@@ -40,13 +57,29 @@ export const AddAccountModal: React.FC<{
       return;
     }
 
+    let cancelled = false;
     setLoading(true);
     const timer = setTimeout(async () => {
-      const res = await suggestAccounts(network, q);
-      setResults(res);
-      setLoading(false);
+      try {
+        const res = await suggestAccounts(network, q);
+        if (!cancelled) {
+          setResults(res);
+        }
+      } catch (error) {
+        console.error("suggestAccounts", error);
+        if (!cancelled) {
+          setResults([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }, 300);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [query, network, isOpen]);
 
   const isDuplicate = (name: string) => {
@@ -56,17 +89,78 @@ export const AddAccountModal: React.FC<{
     );
   };
 
-  function handleSelect(s: any) {
-    if (isDuplicate(s.displayName)) {
+  async function attachAccount(
+    source: Pick<Suggestion, "displayName" | "handle" | "channelId"> & {
+      queryFallback?: string;
+    }
+  ) {
+    if (isDuplicate(source.displayName)) {
       setMessage(t("modal.account.duplicate"));
       return;
     }
-    onAdd(network, s.displayName, folder);
-    setMessage(t("modal.account.added"));
-    setTimeout(() => {
-      setMessage("");
-      onClose();
-    }, 900);
+
+    setSaving(true);
+    setMessage(t("modal.account.fetching"));
+
+    try {
+      let metrics: AccountMetrics | undefined;
+      let displayName = source.displayName;
+
+      if (network === "youtube") {
+        try {
+          const analytics = await fetchYoutubeChannelAnalytics({
+            channelId: source.channelId,
+            handle: source.handle,
+            query: source.queryFallback || source.displayName,
+          });
+          metrics = {
+            type: "youtube",
+            channelId: analytics.channelId,
+            title: analytics.title,
+            handle: analytics.handle,
+            avatarUrl: analytics.avatarUrl,
+            bannerUrl: analytics.bannerUrl,
+            subscribers: analytics.subscribers,
+            totalViews: analytics.totalViews,
+            videoCount: analytics.videoCount,
+            estimatedWatchTimeHours: analytics.estimatedWatchTimeHours,
+            averageViewDurationSeconds: analytics.averageViewDurationSeconds,
+            recentVideos: analytics.recentVideos,
+            lastUpdated: analytics.lastUpdated,
+          } satisfies YoutubeAccountMetrics;
+          displayName =
+            analytics.handle || analytics.title || source.handle || displayName;
+        } catch (error) {
+          console.error("youtube analytics", error);
+          setMessage(t("modal.account.fetchError"));
+          setSaving(false);
+          return;
+        }
+      }
+
+      await Promise.resolve(
+        onAdd({ network, displayName, folder, metrics })
+      );
+      setMessage(t("modal.account.added"));
+      setTimeout(() => {
+        setMessage("");
+        setSaving(false);
+        onClose();
+      }, 900);
+    } catch (error) {
+      console.error("add account", error);
+      setMessage(t("modal.account.fetchError"));
+      setSaving(false);
+    }
+  }
+
+  function handleSelect(s: Suggestion) {
+    void attachAccount({
+      displayName: s.displayName,
+      handle: s.handle,
+      channelId: s.channelId,
+      queryFallback: s.url,
+    });
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -80,12 +174,12 @@ export const AddAccountModal: React.FC<{
       setMessage(t("modal.account.duplicateExisting"));
       return;
     }
-    onAdd(network, name, folder);
-    setMessage(t("modal.account.added"));
-    setTimeout(() => {
-      setMessage("");
-      onClose();
-    }, 900);
+    void attachAccount({
+      displayName: name,
+      handle: name,
+      queryFallback: name,
+      channelId: undefined,
+    });
   }
 
   if (!isOpen) return null;
@@ -140,6 +234,7 @@ export const AddAccountModal: React.FC<{
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("modal.account.placeholder")}
             className="w-full border rounded-lg px-3 py-2"
+            disabled={saving}
           />
 
           {loading && (
@@ -170,6 +265,14 @@ export const AddAccountModal: React.FC<{
                         {s.handle} • {t("modal.account.followers", {
                           count: s.followers.toLocaleString(),
                         })}
+                        {typeof s.videoCount === "number" && (
+                          <>
+                            {" • "}
+                            {t("modal.account.videos", {
+                              count: s.videoCount.toLocaleString(),
+                            })}
+                          </>
+                        )}
                       </div>
                     </div>
                     <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded shrink-0">
@@ -202,7 +305,11 @@ export const AddAccountModal: React.FC<{
           )}
         </div>
 
-        {message && <div className="text-center text-sm text-blue-600">{message}</div>}
+        {message && (
+          <div className="text-center text-sm text-blue-600 whitespace-pre-line">
+            {message}
+          </div>
+        )}
 
         <div className="flex justify-end gap-2 pt-2">
           <button
@@ -214,7 +321,8 @@ export const AddAccountModal: React.FC<{
           </button>
           <button
             type="submit"
-            className="px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+            className="px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={saving}
           >
             {t("modal.account.submit")}
           </button>

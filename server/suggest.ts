@@ -1,8 +1,8 @@
-import { NetworkName } from "../store/useAppState";
-import { resolveApiUrl } from "./api";
+import type { Network } from "./types";
+import { searchYoutubeChannels } from "./youtube";
 
 export type Suggestion = {
-  network: NetworkName;
+  network: Network;
   displayName: string;
   handle: string;
   followers: number;
@@ -14,16 +14,7 @@ export type Suggestion = {
   videoCount?: number;
 };
 
-const CACHE_KEY = "influenceops.suggestions-cache";
-const CACHE_VERSION = 1;
-const CACHE_TTL = 1000 * 60 * 60 * 24 * 7; // 7 jours
-
-type SuggestionCache = {
-  version: number;
-  entries: Record<string, { expiresAt: number; items: Suggestion[] }>;
-};
-
-const FALLBACK_SUGGESTIONS: Record<NetworkName, Suggestion[]> = {
+const FALLBACK_SUGGESTIONS: Record<Network, Suggestion[]> = {
   youtube: [
     {
       network: "youtube",
@@ -109,8 +100,8 @@ function deterministicFollowers(handle: string): number {
   return base;
 }
 
-function guessDefaultAvatar(network: NetworkName): string {
-  const logos: Record<NetworkName, string> = {
+function guessDefaultAvatar(network: Network): string {
+  const logos: Record<Network, string> = {
     youtube: "/logos/youtube.svg",
     instagram: "/logos/instagram.svg",
     facebook: "/logos/facebook.svg",
@@ -119,7 +110,7 @@ function guessDefaultAvatar(network: NetworkName): string {
   return logos[network];
 }
 
-function filterFallback(network: NetworkName, query: string) {
+function filterFallback(network: Network, query: string) {
   const q = query.trim().toLowerCase();
   return FALLBACK_SUGGESTIONS[network].filter(
     (item) =>
@@ -128,93 +119,113 @@ function filterFallback(network: NetworkName, query: string) {
   );
 }
 
-function readCache(): SuggestionCache {
-  if (typeof window === "undefined") {
-    return { version: CACHE_VERSION, entries: {} };
-  }
-  try {
-    const raw = window.localStorage.getItem(CACHE_KEY);
-    if (!raw) {
-      return { version: CACHE_VERSION, entries: {} };
+function cleanTitle(title: string): string {
+  return title.replace(/\s*[-|–]\s*(YouTube|TikTok|Instagram|Facebook).*/i, "").trim();
+}
+
+function extractHandleFromUrl(url: string): string | null {
+  const match = url.match(/@[\w.-]+/);
+  return match ? match[0] : null;
+}
+
+function extractHandleFromText(text: string): string | null {
+  const match = text.match(/@[\w.-]+/);
+  return match ? match[0] : null;
+}
+
+function normalizeSuggestions(network: Network, raw: any[]): Suggestion[] {
+  return raw
+    .filter((entry) => entry && typeof entry === "object" && entry.FirstURL && entry.Text)
+    .map((entry) => {
+      const displayName = cleanTitle(String(entry.Text));
+      const handle =
+        extractHandleFromUrl(String(entry.FirstURL)) ||
+        extractHandleFromText(String(entry.Text)) ||
+        displayName;
+      return {
+        network,
+        displayName,
+        handle,
+        followers: deterministicFollowers(handle),
+        avatar: guessDefaultAvatar(network),
+        url: String(entry.FirstURL),
+      } satisfies Suggestion;
+    })
+    .slice(0, 6);
+}
+
+function flattenDuckDuckGoTopics(topics: any[]): any[] {
+  const result: any[] = [];
+  topics.forEach((topic) => {
+    if (!topic) return;
+    if (Array.isArray(topic.Topics)) {
+      result.push(...topic.Topics);
+    } else {
+      result.push(topic);
     }
-    const parsed = JSON.parse(raw) as SuggestionCache;
-    if (parsed.version !== CACHE_VERSION || !parsed.entries) {
-      return { version: CACHE_VERSION, entries: {} };
+  });
+  return result;
+}
+
+export async function fetchAccountSuggestions(
+  network: Network,
+  query: string
+): Promise<Suggestion[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  if (network === "youtube") {
+    const online = await searchYoutubeChannels(trimmed);
+    if (online.length > 0) {
+      return online as Suggestion[];
     }
-    return parsed;
-  } catch (err) {
-    console.warn("suggestAccounts: unable to read cache", err);
-    return { version: CACHE_VERSION, entries: {} };
   }
-}
 
-function writeCache(cache: SuggestionCache) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-  } catch (err) {
-    console.warn("suggestAccounts: unable to persist cache", err);
+  let search = trimmed;
+  switch (network) {
+    case "youtube":
+      search += " site:youtube.com/@ OR site:youtube.com/channel";
+      break;
+    case "instagram":
+      search += " site:instagram.com";
+      break;
+    case "facebook":
+      search += " site:facebook.com";
+      break;
+    case "tiktok":
+      search += " site:tiktok.com/@";
+      break;
   }
-}
 
-function cacheKey(network: NetworkName, query: string) {
-  return `${network}:${query.trim().toLowerCase()}`;
-}
-
-function getCachedSuggestions(network: NetworkName, query: string) {
-  const cache = readCache();
-  const key = cacheKey(network, query);
-  const hit = cache.entries[key];
-  if (!hit) return null;
-  if (Date.now() > hit.expiresAt) {
-    delete cache.entries[key];
-    writeCache(cache);
-    return null;
-  }
-  return hit.items;
-}
-
-function storeSuggestions(network: NetworkName, query: string, items: Suggestion[]) {
-  const cache = readCache();
-  const key = cacheKey(network, query);
-  cache.entries[key] = {
-    expiresAt: Date.now() + CACHE_TTL,
-    items,
-  };
-  writeCache(cache);
-}
-
-export async function suggestAccounts(network: NetworkName, query: string): Promise<Suggestion[]> {
-  if (!query.trim()) return [];
-
-  const cached = getCachedSuggestions(network, query);
-  if (cached) {
-    return cached;
-  }
+  const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(
+    search
+  )}&format=json&no_redirect=1&no_html=1`;
 
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    const url = resolveApiUrl(
-      `/api/suggest?network=${network}&q=${encodeURIComponent(query.trim())}`
-    );
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
 
-    if (!res.ok) throw new Error(`Suggest API ${res.status}`);
-
-    const payload = (await res.json()) as { suggestions?: Suggestion[] };
-    const results = Array.isArray(payload?.suggestions) ? payload.suggestions : [];
-
-    if (results.length > 0) {
-      storeSuggestions(network, query, results);
-      return results;
+    if (!res.ok) {
+      throw new Error(`DuckDuckGo ${res.status}`);
     }
-  } catch (err) {
-    console.warn("suggestAccounts: fallback to offline dataset", err);
+
+    const data = await res.json();
+    const related = Array.isArray(data?.RelatedTopics) ? data.RelatedTopics : [];
+    const flattened = flattenDuckDuckGoTopics(related);
+    const normalized = normalizeSuggestions(network, flattened);
+
+    if (normalized.length > 0) {
+      return normalized;
+    }
+  } catch (error) {
+    console.warn("suggest: falling back to offline dataset", error);
   }
 
-  const fallback = filterFallback(network, query);
-  storeSuggestions(network, query, fallback);
-  return fallback;
+  return filterFallback(network, trimmed);
+}
+
+export function getFallbackSuggestions(network: Network, query: string) {
+  return filterFallback(network, query);
 }

@@ -298,8 +298,8 @@ export function Sidebar({
       <AddAccountModal
         isOpen={showAddAccount}
         onClose={() => setShowAddAccount(false)}
-        onAdd={(network, displayName, folder) => {
-          addAccount({ network, displayName, folder });
+        onAdd={({ network, displayName, folder, metrics }) => {
+          addAccount({ network, displayName, folder, metrics });
           setActiveFolder(folder);
         }}
         existing={accounts}

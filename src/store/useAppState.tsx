@@ -2,11 +2,42 @@ import React, { createContext, useContext, useMemo, useState } from "react";
 
 export type NetworkName = "instagram" | "facebook" | "tiktok" | "youtube";
 
+export interface VideoPerformance {
+  id: string;
+  title: string;
+  publishedAt: string;
+  views: number;
+  likeCount: number;
+  commentCount: number;
+  durationSeconds: number;
+  url: string;
+  thumbnailUrl: string;
+}
+
+export interface YoutubeAccountMetrics {
+  type: "youtube";
+  channelId: string;
+  title: string;
+  handle?: string;
+  avatarUrl: string;
+  bannerUrl?: string;
+  subscribers: number;
+  totalViews: number;
+  videoCount: number;
+  estimatedWatchTimeHours: number;
+  averageViewDurationSeconds: number;
+  recentVideos: VideoPerformance[];
+  lastUpdated: string;
+}
+
+export type AccountMetrics = YoutubeAccountMetrics;
+
 export interface Account {
   id: string;
   network: NetworkName;
   displayName: string; // ex: "@laugh-logic" ou "Laugh Logic"
   folder: string; // nom du dossier
+  metrics?: AccountMetrics;
 }
 
 interface AppState {
@@ -18,11 +49,12 @@ interface AppState {
 
 interface AppActions {
   reorderNetworks: (from: number, to: number) => void;
-  addAccount: (acc: Omit<Account, "id">) => void;
+  addAccount: (acc: Omit<Account, "id">) => Account;
   removeAccount: (id: string) => void;
   addFolder: (name: string) => void;
   removeFolder: (name: string) => void;
   setActiveFolder: (folder?: string) => void;
+  setAccountMetrics: (id: string, metrics: AccountMetrics) => void;
 }
 
 interface AppContextType {
@@ -64,10 +96,12 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addAccount = (acc: Omit<Account, "id">) => {
+    const created: Account = { id: createId(), ...acc };
     setState((s) => ({
       ...s,
-      accounts: [...s.accounts, { id: createId(), ...acc }],
+      accounts: [...s.accounts, created],
     }));
+    return created;
   };
 
   const removeAccount = (id: string) => {
@@ -98,6 +132,15 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     setState((s) => ({ ...s, activeFolder: folder }));
   };
 
+  const setAccountMetrics = (id: string, metrics: AccountMetrics) => {
+    setState((s) => ({
+      ...s,
+      accounts: s.accounts.map((account) =>
+        account.id === id ? { ...account, metrics } : account
+      ),
+    }));
+  };
+
   const value = useMemo<AppContextType>(
     () => ({
       state,
@@ -108,6 +151,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         addFolder,
         removeFolder,
         setActiveFolder,
+        setAccountMetrics,
       },
     }),
     [state]

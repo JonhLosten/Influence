@@ -16,6 +16,7 @@ import { SocialIcon } from "../components/SocialIcon";
 import { getDashboardData, MockPost } from "./_dataMock";
 import { fetchOverviewAnalytics } from "../services/analytics";
 import { NetworkName } from "../store/useAppState";
+import { usePreferences } from "../store/usePreferences";
 
 export type Period = "7d" | "30d" | "90d" | "365d" | "all";
 
@@ -42,22 +43,36 @@ const networkColors: Record<NetworkName, string> = {
   youtube: "#ff0000",
 };
 
-const INITIAL_DATA = getDashboardData(periodToDays["7d"]);
+const NETWORKS: NetworkName[] = ["instagram", "facebook", "tiktok", "youtube"];
+
+type DashboardData = ReturnType<typeof getDashboardData>;
+
+const EMPTY_DASHBOARD_DATA: DashboardData = {
+  summary: [],
+  trendStack: [],
+  topPosts: [],
+  horizons: [7, 30, 90, 365, "all"],
+  networks: NETWORKS,
+};
 
 const toNavKey = (network: NetworkName): LocaleKey =>
   (`nav.${network}` as unknown) as LocaleKey;
 
 export const Dashboard: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { prefs } = usePreferences();
   const [period, setPeriod] = React.useState<Period>("7d");
-  const [data, setData] = React.useState(INITIAL_DATA);
+  const [data, setData] = React.useState<DashboardData>(() =>
+    prefs.showDemoData ? getDashboardData(periodToDays["7d"]) : EMPTY_DASHBOARD_DATA
+  );
   const [loading, setLoading] = React.useState(false);
   const [overview, setOverview] = React.useState<
     Awaited<ReturnType<typeof fetchOverviewAnalytics>> | null
   >(null);
-  const [overviewError, setOverviewError] = React.useState<string | null>(null);
+  const [overviewLoading, setOverviewLoading] = React.useState(false);
+  const [overviewError, setOverviewError] = React.useState<"api" | null>(null);
   const [selectedNetworks, setSelectedNetworks] = React.useState<NetworkName[]>(
-    INITIAL_DATA.networks as NetworkName[]
+    NETWORKS
   );
   const [topSort, setTopSort] = React.useState<"engagement" | "views">(
     "engagement"
@@ -68,28 +83,36 @@ export const Dashboard: React.FC = () => {
 
   React.useEffect(() => {
     const range = periodToDays[period];
+    if (!prefs.showDemoData) {
+      setData(EMPTY_DASHBOARD_DATA);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const next = getDashboardData(range);
     setData(next);
     setLoading(false);
-  }, [period]);
+  }, [period, prefs.showDemoData]);
 
   React.useEffect(() => {
     let cancelled = false;
     const range = periodToDays[period];
     const days = range === "all" ? 365 : range;
     setOverviewError(null);
+    setOverviewLoading(true);
     fetchOverviewAnalytics(days)
       .then((payload) => {
         if (!cancelled) {
           setOverview(payload);
+          setOverviewLoading(false);
         }
       })
       .catch((err) => {
         if (!cancelled) {
           console.error("Failed to load overview analytics", err);
-          setOverviewError(err instanceof Error ? err.message : String(err));
+          setOverviewError("api");
           setOverview(null);
+          setOverviewLoading(false);
         }
       });
     return () => {
@@ -138,13 +161,21 @@ export const Dashboard: React.FC = () => {
     return data.topPosts.map((post) => ({ ...post, url: "#" }));
   }, [overview, data.topPosts]);
 
-  const availableNetworks = data.networks as NetworkName[];
+  const availableNetworks = NETWORKS;
 
   const activeNetworks = selectedNetworks.length
     ? selectedNetworks
     : availableNetworks;
 
   const chartData = React.useMemo(() => {
+    if (!prefs.showDemoData) {
+      if (!overview?.trends?.length) return [] as Array<{ date: string; total: number }>;
+      return overview.trends.map((point) => ({
+        date: point.date,
+        total: point.views,
+      }));
+    }
+
     return data.trendStack.map((item) => {
       const entry: Record<string, number | string> = { date: item.date };
       let total = 0;
@@ -156,7 +187,7 @@ export const Dashboard: React.FC = () => {
       entry.total = total;
       return entry as typeof item & { total: number };
     });
-  }, [data.trendStack, activeNetworks]);
+  }, [prefs.showDemoData, overview, data.trendStack, activeNetworks]);
 
   const movingWindow = React.useMemo(() => {
     switch (period) {
@@ -184,15 +215,33 @@ export const Dashboard: React.FC = () => {
     });
   }, [chartData, movingWindow]);
 
+  const isChartLoading = loading || overviewLoading;
+  const isChartEmpty = chartWithAverage.length === 0;
+
   const totalsForActiveNetworks = React.useMemo(() => {
+    if (overview) {
+      return activeNetworks.reduce((acc, network) => {
+        acc[network] = overview.networks[network] ?? 0;
+        return acc;
+      }, {} as Record<NetworkName, number>);
+    }
+
+    if (!prefs.showDemoData) {
+      return activeNetworks.reduce((acc, network) => {
+        acc[network] = 0;
+        return acc;
+      }, {} as Record<NetworkName, number>);
+    }
+
     return activeNetworks.reduce((acc, network) => {
       const sum = chartData.reduce(
         (total, day) => total + ((day[network] as number) ?? 0),
         0
       );
-      return { ...acc, [network]: sum };
+      acc[network] = sum;
+      return acc;
     }, {} as Record<NetworkName, number>);
-  }, [activeNetworks, chartData]);
+  }, [activeNetworks, chartData, overview, prefs.showDemoData]);
 
   const filteredPosts = React.useMemo(() => {
     if (!selectedNetworks.length) return postsToDisplay;
@@ -383,6 +432,11 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen overflow-auto" key={lang}>
+      {!prefs.showDemoData && !overview && !overviewLoading && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-2xl">
+          {t("dashboard.demoDisabledNotice")}
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {([
           ["instagram", totalsPerNetwork.instagram],
@@ -556,9 +610,15 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {loading ? (
+        {isChartLoading ? (
           <div className="h-[350px] flex items-center justify-center text-gray-400">
             {t("loading")}
+          </div>
+        ) : isChartEmpty ? (
+          <div className="h-[350px] flex items-center justify-center text-gray-400 text-center px-4">
+            {prefs.showDemoData
+              ? t("dashboard.topContent.noData")
+              : t("dashboard.demoDisabledNotice")}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={350}>
@@ -568,15 +628,24 @@ export const Dashboard: React.FC = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              {activeNetworks.map((network) => (
+              {prefs.showDemoData ? (
+                activeNetworks.map((network) => (
+                  <Bar
+                    key={network}
+                    dataKey={network}
+                    fill={networkColors[network]}
+                    name={t(toNavKey(network))}
+                    stackId="views"
+                  />
+                ))
+              ) : (
                 <Bar
-                  key={network}
-                  dataKey={network}
-                  fill={networkColors[network]}
-                  name={t(toNavKey(network))}
-                  stackId="views"
+                  dataKey="total"
+                  fill="#2563eb"
+                  name={t("dashboard.viewsLabel")}
+                  radius={[4, 4, 0, 0]}
                 />
-              ))}
+              )}
               <Line
                 type="monotone"
                 dataKey="movingAverage"
@@ -596,7 +665,7 @@ export const Dashboard: React.FC = () => {
         </h3>
         {overviewError && (
           <div className="mb-4 text-sm text-amber-600">
-            {overviewError}
+            {t("dashboard.error.overview")}
           </div>
         )}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
