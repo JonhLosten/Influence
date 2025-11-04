@@ -1,6 +1,5 @@
 import { NetworkName } from "../store/useAppState";
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || "http://localhost:5174";
+import { resolveApiUrl } from "./api";
 
 export interface NetworkProfile {
   followers: number;
@@ -58,16 +57,11 @@ export interface OverviewAnalytics {
   trends: TrendPoint[];
 }
 
-function resolveUrl(path: string) {
-  const base = API_BASE.replace(/\/$/, "");
-  return `${base}${path}`;
-}
-
 export async function fetchNetworkSnapshot(
   network: NetworkName,
   days: number
 ): Promise<NetworkSnapshotResponse> {
-  const res = await fetch(resolveUrl(`/api/networks/${network}?days=${days}`));
+  const res = await fetch(resolveApiUrl(`/api/networks/${network}?days=${days}`));
   if (!res.ok) {
     throw new Error(`API ${res.status}`);
   }
@@ -75,7 +69,7 @@ export async function fetchNetworkSnapshot(
 }
 
 export async function fetchOverviewAnalytics(days: number): Promise<OverviewAnalytics> {
-  const res = await fetch(resolveUrl(`/api/overview?days=${days}`));
+  const res = await fetch(resolveApiUrl(`/api/overview?days=${days}`));
   if (!res.ok) {
     throw new Error(`API ${res.status}`);
   }

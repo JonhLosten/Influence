@@ -3,6 +3,7 @@ import { URL } from "url";
 import { createAnalyticsPipeline } from "./pipeline";
 import { getProfileAnalytics, getPostsAnalytics } from "./ayrshare";
 import type { Network } from "./types";
+import { fetchAccountSuggestions } from "./suggest";
 
 const PORT = Number(process.env.PORT || 5174);
 
@@ -67,6 +68,18 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
       const days = pipeline.clampDays(url.searchParams.get("days"), 30);
       const overview = await pipeline.fetchOverview(days);
       sendJSON(res, 200, overview, origin);
+      return;
+    }
+
+    if (url.pathname === "/api/suggest") {
+      const network = url.searchParams.get("network") ?? "";
+      const query = url.searchParams.get("q") ?? "";
+      if (!pipeline.ensureNetwork(network)) {
+        sendJSON(res, 400, { error: "Unknown network" }, origin);
+        return;
+      }
+      const suggestions = await fetchAccountSuggestions(network as Network, query);
+      sendJSON(res, 200, { suggestions }, origin);
       return;
     }
 

@@ -1,8 +1,13 @@
 import React from "react";
 import { useLanguage } from "../i18n";
+import { usePreferences } from "../store/usePreferences";
 
 export function Settings() {
   const { lang, setLang, t } = useLanguage();
+  const {
+    prefs: { showDemoData },
+    setShowDemoData,
+  } = usePreferences();
 
   function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const v = e.target.value === "en" ? "en" : "fr";
@@ -20,6 +25,26 @@ export function Settings() {
         </select>
       </label>
       <p className="text-xs text-gray-500">{t("settings.language.persisted")}</p>
+
+      <div className="border-t pt-3 mt-3 space-y-2">
+        <div>
+          <div className="text-sm font-medium text-gray-800">
+            {t("settings.demoData.title")}
+          </div>
+          <p className="text-xs text-gray-500">
+            {t("settings.demoData.description")}
+          </p>
+        </div>
+        <label className="flex items-center justify-between text-sm text-gray-700 bg-gray-50 border rounded-xl px-3 py-2">
+          <span>{t("settings.demoData.toggle")}</span>
+          <input
+            type="checkbox"
+            checked={showDemoData}
+            onChange={(event) => setShowDemoData(event.target.checked)}
+            className="h-4 w-4"
+          />
+        </label>
+      </div>
     </div>
   );
 }
