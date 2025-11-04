@@ -6,8 +6,16 @@ import {
 } from "./types";
 
 interface AnalyticsSource {
-  fetchProfile: (network: Network, days: number) => Promise<any>;
-  fetchPosts: (network: Network, days: number) => Promise<any[]>;
+  fetchProfile: (
+    network: Network,
+    days: number,
+    accounts: string[]
+  ) => Promise<any>;
+  fetchPosts: (
+    network: Network,
+    days: number,
+    accounts: string[]
+  ) => Promise<any[]>;
 }
 
 const SUPPORTED_NETWORKS: Network[] = ["instagram", "facebook", "tiktok", "youtube"];
@@ -23,10 +31,14 @@ function clampDays(input: unknown, fallback = 30) {
 }
 
 export function createAnalyticsPipeline(source: AnalyticsSource) {
-  async function fetchSnapshot(network: Network, days: number): Promise<NetworkSnapshot> {
+  async function fetchSnapshot(
+    network: Network,
+    days: number,
+    accounts: string[] = []
+  ): Promise<NetworkSnapshot> {
     const [profileRaw, postsRaw] = await Promise.all([
-      source.fetchProfile(network, days),
-      source.fetchPosts(network, days),
+      source.fetchProfile(network, days, accounts),
+      source.fetchPosts(network, days, accounts),
     ]);
     const profile = normalizeProfile(network, profileRaw);
     const posts = normalizePosts(network, postsRaw);
@@ -42,15 +54,25 @@ export function createAnalyticsPipeline(source: AnalyticsSource) {
     };
   }
 
-  async function fetchOverview(days: number): Promise<OverviewAnalytics> {
+  async function fetchOverview(
+    days: number,
+    accountsByNetwork?: Partial<Record<Network, string[]>>
+  ): Promise<OverviewAnalytics> {
     const snapshots = await Promise.all(
-      SUPPORTED_NETWORKS.map((network) => fetchSnapshot(network, days))
+      SUPPORTED_NETWORKS.map((network) =>
+        fetchSnapshot(network, days, accountsByNetwork?.[network] ?? [])
+      )
     );
 
     const networks = snapshots.reduce((acc, snapshot) => {
       acc[snapshot.network] = snapshot.profile.views;
       return acc;
     }, {} as OverviewAnalytics["networks"]);
+
+    const watchTimeHours = snapshots.reduce((acc, snapshot) => {
+      acc[snapshot.network] = snapshot.profile.watchTimeHours ?? 0;
+      return acc;
+    }, {} as OverviewAnalytics["watchTimeHours"]);
 
     const topPosts = snapshots
       .flatMap((snapshot) => snapshot.topPosts)
@@ -81,7 +103,7 @@ export function createAnalyticsPipeline(source: AnalyticsSource) {
         delta: 0,
       }));
 
-    return { networks, topPosts, summaries, trends };
+    return { networks, topPosts, summaries, trends, watchTimeHours };
   }
 
   return {

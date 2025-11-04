@@ -1,8 +1,14 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "http";
-import { URL } from "url";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+  type Server,
+} from "http";
+import { URL, pathToFileURL } from "url";
 import { createAnalyticsPipeline } from "./pipeline";
 import { getProfileAnalytics, getPostsAnalytics } from "./ayrshare";
 import type { Network } from "./types";
+import { fetchAccountSuggestions } from "./suggest";
 
 const PORT = Number(process.env.PORT || 5174);
 
@@ -10,6 +16,65 @@ const pipeline = createAnalyticsPipeline({
   fetchProfile: getProfileAnalytics,
   fetchPosts: getPostsAnalytics,
 });
+
+function sanitizeAccountHandle(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const withoutPrefix = trimmed.startsWith("@")
+    ? trimmed.slice(1)
+    : trimmed;
+  const clean = withoutPrefix.replace(/[^a-z0-9_.-]/gi, "");
+  return clean ? `@${clean}` : "";
+}
+
+function parseAccountsForNetwork(
+  params: URLSearchParams,
+  network: Network
+) {
+  const raw = params.getAll("account");
+  const handles: string[] = [];
+  raw.forEach((entry) => {
+    entry
+      .split(",")
+      .map((value) => value.trim())
+      .forEach((token) => {
+        if (!token) return;
+        if (token.includes(":")) {
+          const [prefix, rest] = token.split(/:(.+)/);
+          if (pipeline.ensureNetwork(prefix) && prefix === network) {
+            const normalized = sanitizeAccountHandle(rest ?? "");
+            if (normalized) handles.push(normalized);
+          }
+          return;
+        }
+        const normalized = sanitizeAccountHandle(token);
+        if (normalized) handles.push(normalized);
+      });
+  });
+  return handles;
+}
+
+function parseAccountsByNetwork(params: URLSearchParams) {
+  const raw = params.getAll("account");
+  const result: Partial<Record<Network, string[]>> = {};
+  raw.forEach((entry) => {
+    entry
+      .split(",")
+      .map((value) => value.trim())
+      .forEach((token) => {
+        if (!token) return;
+        if (!token.includes(":")) return;
+        const [prefix, rest] = token.split(/:(.+)/);
+        if (!prefix || !rest) return;
+        if (!pipeline.ensureNetwork(prefix)) return;
+        const normalized = sanitizeAccountHandle(rest);
+        if (!normalized) return;
+        const key = prefix as Network;
+        result[key] = [...(result[key] ?? []), normalized];
+      });
+  });
+  return result;
+}
 
 function sendJSON(
   res: ServerResponse,
@@ -58,15 +123,36 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
         return;
       }
       const days = pipeline.clampDays(url.searchParams.get("days"), 30);
-      const snapshot = await pipeline.fetchSnapshot(network as Network, days);
+      const accounts = parseAccountsForNetwork(
+        url.searchParams,
+        network as Network
+      );
+      const snapshot = await pipeline.fetchSnapshot(
+        network as Network,
+        days,
+        accounts
+      );
       sendJSON(res, 200, snapshot, origin);
       return;
     }
 
     if (url.pathname === "/api/overview") {
       const days = pipeline.clampDays(url.searchParams.get("days"), 30);
-      const overview = await pipeline.fetchOverview(days);
+      const accountsByNetwork = parseAccountsByNetwork(url.searchParams);
+      const overview = await pipeline.fetchOverview(days, accountsByNetwork);
       sendJSON(res, 200, overview, origin);
+      return;
+    }
+
+    if (url.pathname === "/api/suggest") {
+      const network = url.searchParams.get("network") ?? "";
+      const query = url.searchParams.get("q") ?? "";
+      if (!pipeline.ensureNetwork(network)) {
+        sendJSON(res, 400, { error: "Unknown network" }, origin);
+        return;
+      }
+      const suggestions = await fetchAccountSuggestions(network as Network, query);
+      sendJSON(res, 200, { suggestions }, origin);
       return;
     }
 
@@ -77,6 +163,24 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`✅ Analytics pipeline active on http://localhost:${PORT}`);
-});
+export function startAnalyticsServer(port = PORT): Server {
+  const activePort = Number(port) || PORT;
+  server.listen(activePort, () => {
+    console.log(`✅ Analytics pipeline active on http://localhost:${activePort}`);
+  });
+  return server;
+}
+
+const isMainModule = (() => {
+  const entry = process.argv?.[1];
+  if (!entry) return false;
+  try {
+    return pathToFileURL(entry).href === import.meta.url;
+  } catch {
+    return false;
+  }
+})();
+
+if (isMainModule) {
+  startAnalyticsServer();
+}

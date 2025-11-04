@@ -27,6 +27,12 @@ export function normalizeProfile(network: Network, raw: any): KPI {
   const comments = raw.comments ?? 0;
   const shares = raw.shares ?? 0;
   const views = raw.views ?? impressions ?? 0;
+  const watchTimeHours = raw.watchTimeHours ?? raw.watchTime ?? undefined;
+  const avgViewDurationSeconds =
+    raw.avgViewDurationSeconds ?? raw.avgViewDuration ?? undefined;
+  const audienceRetentionRate =
+    raw.audienceRetentionRate ?? raw.retentionRate ?? undefined;
+  const videosPublished = raw.videosPublished ?? raw.postsPublished ?? undefined;
   const engagementRate = impressions
     ? +(((likes + comments + shares) / impressions).toFixed(4))
     : undefined;
@@ -38,6 +44,10 @@ export function normalizeProfile(network: Network, raw: any): KPI {
     comments,
     shares,
     engagementRate,
+    watchTimeHours,
+    avgViewDurationSeconds,
+    audienceRetentionRate,
+    videosPublished,
     period: raw.period ?? { from: "", to: "" },
   };
 }

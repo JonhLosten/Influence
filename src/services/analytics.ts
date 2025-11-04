@@ -1,6 +1,5 @@
 import { NetworkName } from "../store/useAppState";
-
-const API_BASE = (import.meta as any).env?.VITE_API_URL || "http://localhost:5174";
+import { resolveApiUrl } from "./api";
 
 export interface NetworkProfile {
   followers: number;
@@ -10,6 +9,10 @@ export interface NetworkProfile {
   comments: number;
   shares?: number;
   engagementRate?: number;
+  watchTimeHours?: number;
+  avgViewDurationSeconds?: number;
+  audienceRetentionRate?: number;
+  videosPublished?: number;
   period: { from: string; to: string };
 }
 
@@ -56,26 +59,43 @@ export interface OverviewAnalytics {
   topPosts: NormalizedPost[];
   summaries: Record<NetworkName, AnalyticsSummary>;
   trends: TrendPoint[];
-}
-
-function resolveUrl(path: string) {
-  const base = API_BASE.replace(/\/$/, "");
-  return `${base}${path}`;
+  watchTimeHours: Record<NetworkName, number>;
 }
 
 export async function fetchNetworkSnapshot(
   network: NetworkName,
-  days: number
+  days: number,
+  accounts: string[] = []
 ): Promise<NetworkSnapshotResponse> {
-  const res = await fetch(resolveUrl(`/api/networks/${network}?days=${days}`));
+  const params = new URLSearchParams({ days: String(days) });
+  accounts.forEach((account) => {
+    if (!account.trim()) return;
+    params.append("account", account);
+  });
+  const res = await fetch(
+    resolveApiUrl(`/api/networks/${network}?${params.toString()}`)
+  );
   if (!res.ok) {
     throw new Error(`API ${res.status}`);
   }
   return res.json();
 }
 
-export async function fetchOverviewAnalytics(days: number): Promise<OverviewAnalytics> {
-  const res = await fetch(resolveUrl(`/api/overview?days=${days}`));
+export async function fetchOverviewAnalytics(
+  days: number,
+  accountsByNetwork?: Partial<Record<NetworkName, string[]>>
+): Promise<OverviewAnalytics> {
+  const params = new URLSearchParams({ days: String(days) });
+  if (accountsByNetwork) {
+    Object.entries(accountsByNetwork).forEach(([network, handles]) => {
+      if (!Array.isArray(handles)) return;
+      handles.forEach((handle) => {
+        if (!handle?.trim()) return;
+        params.append("account", `${network}:${handle}`);
+      });
+    });
+  }
+  const res = await fetch(resolveApiUrl(`/api/overview?${params.toString()}`));
   if (!res.ok) {
     throw new Error(`API ${res.status}`);
   }

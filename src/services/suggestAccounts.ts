@@ -1,4 +1,5 @@
 import { NetworkName } from "../store/useAppState";
+import { resolveApiUrl } from "./api";
 
 type Suggestion = {
   network: NetworkName;
@@ -108,6 +109,16 @@ function guessDefaultAvatar(network: NetworkName): string {
   return logos[network];
 }
 
+function createAvatarDataUrl(handle: string) {
+  const normalized = handle.replace(/^@/, "").slice(0, 2).toUpperCase();
+  const hue = deterministicFollowers(handle) % 360;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'>` +
+    `<rect width='100%' height='100%' rx='16' fill='hsl(${hue},72%,52%)'/>` +
+    `<text x='50%' y='58%' font-family='Inter, Helvetica, Arial, sans-serif' font-size='34' font-weight='600' text-anchor='middle' fill='white'>${normalized || "@"}</text>` +
+    `</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 function filterFallback(network: NetworkName, query: string) {
   const q = query.trim().toLowerCase();
   return FALLBACK_SUGGESTIONS[network].filter(
@@ -115,6 +126,85 @@ function filterFallback(network: NetworkName, query: string) {
       item.displayName.toLowerCase().includes(q) ||
       item.handle.toLowerCase().includes(q)
   );
+}
+
+function sanitizeQueryToHandle(query: string) {
+  const trimmed = query.trim();
+  if (!trimmed) return "";
+  const slug = trimmed
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^[^@]*@/, "@")
+    .replace(/[^a-z0-9_.@-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (!slug) return "";
+  if (slug.startsWith("@")) return slug;
+  return `@${slug}`;
+}
+
+function toDisplayName(query: string) {
+  const cleaned = query
+    .replace(/https?:\/\//gi, "")
+    .replace(/[@#]/g, " ")
+    .trim();
+  if (!cleaned) return "Profil suggéré";
+  return cleaned
+    .split(/\s+/)
+    .slice(0, 4)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function buildNetworkUrl(network: NetworkName, handle: string) {
+  const normalized = handle.replace(/^@/, "");
+  switch (network) {
+    case "youtube":
+      return `https://www.youtube.com/${handle.startsWith("@") ? "" : "@"}${normalized}`;
+    case "instagram":
+      return `https://www.instagram.com/${normalized}`;
+    case "facebook":
+      return `https://www.facebook.com/${normalized}`;
+    case "tiktok":
+      return `https://www.tiktok.com/@${normalized}`;
+    default:
+      return "";
+  }
+}
+
+function createSyntheticSuggestions(
+  network: NetworkName,
+  query: string
+): Suggestion[] {
+  const baseHandle = sanitizeQueryToHandle(query) || `@${network}-creator`;
+  const handles = [baseHandle];
+  if (!query.trim()) {
+    return handles.map((handle) => ({
+      network,
+      displayName: toDisplayName(handle),
+      handle,
+      followers: deterministicFollowers(handle),
+      avatar: createAvatarDataUrl(handle),
+      url: buildNetworkUrl(network, handle),
+    }));
+  }
+
+  if (!baseHandle.includes("pro") && handles.length < 2) {
+    handles.push(`${baseHandle}-pro`);
+  }
+  if (!baseHandle.includes("live") && handles.length < 3) {
+    handles.push(`${baseHandle}-live`);
+  }
+
+  return handles.slice(0, 3).map((handle, index) => ({
+    network,
+    displayName:
+      index === 0 ? toDisplayName(query) : `${toDisplayName(query)} ${index + 1}`,
+    handle,
+    followers: deterministicFollowers(handle),
+    avatar: createAvatarDataUrl(handle),
+    url: buildNetworkUrl(network, handle),
+  }));
 }
 
 function readCache(): SuggestionCache {
@@ -181,50 +271,19 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
     return cached;
   }
 
-  let search = query.trim();
-  switch (network) {
-    case "youtube":
-      search += " site:youtube.com/@ OR site:youtube.com/channel";
-      break;
-    case "instagram":
-      search += " site:instagram.com";
-      break;
-    case "facebook":
-      search += " site:facebook.com";
-      break;
-    case "tiktok":
-      search += " site:tiktok.com/@";
-      break;
-  }
-
-  const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(search)}&format=json&no_redirect=1&no_html=1`;
-
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const url = resolveApiUrl(
+      `/api/suggest?network=${network}&q=${encodeURIComponent(query.trim())}`
+    );
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
 
-    if (!res.ok) throw new Error(`DuckDuckGo ${res.status}`);
+    if (!res.ok) throw new Error(`Suggest API ${res.status}`);
 
-    const data = await res.json();
-    const related = Array.isArray(data?.RelatedTopics) ? data.RelatedTopics : [];
-    const results = related
-      .filter((r: any) => r?.FirstURL && r?.Text)
-      .slice(0, 6)
-      .map((r: any) => {
-        const displayName = cleanTitle(r.Text);
-        const handle =
-          extractHandleFromUrl(r.FirstURL) || extractHandleFromText(r.Text) || displayName;
-        return {
-          network,
-          displayName,
-          handle,
-          followers: deterministicFollowers(handle),
-          avatar: guessDefaultAvatar(network),
-          url: r.FirstURL,
-        } satisfies Suggestion;
-      });
+    const payload = (await res.json()) as { suggestions?: Suggestion[] };
+    const results = Array.isArray(payload?.suggestions) ? payload.suggestions : [];
 
     if (results.length > 0) {
       storeSuggestions(network, query, results);
@@ -235,20 +294,12 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
   }
 
   const fallback = filterFallback(network, query);
-  storeSuggestions(network, query, fallback);
-  return fallback;
-}
+  if (fallback.length > 0) {
+    storeSuggestions(network, query, fallback);
+    return fallback;
+  }
 
-function cleanTitle(title: string): string {
-  return title.replace(/\s*[-|–]\s*(YouTube|TikTok|Instagram|Facebook).*/i, "").trim();
-}
-
-function extractHandleFromUrl(url: string): string | null {
-  const match = url.match(/@[\w.-]+/);
-  return match ? match[0] : null;
-}
-
-function extractHandleFromText(text: string): string | null {
-  const match = text.match(/@[\w.-]+/);
-  return match ? match[0] : null;
+  const synthetic = createSyntheticSuggestions(network, query);
+  storeSuggestions(network, query, synthetic);
+  return synthetic;
 }

@@ -17,6 +17,8 @@ import {
 } from "../store/useAppState";
 import { SocialIcon } from "../components/SocialIcon";
 import { fetchNetworkSnapshot } from "../services/analytics";
+import { usePreferences } from "../store/usePreferences";
+import { useLanguage, LocaleKey } from "../i18n";
 
 export type NetworkSnapshot = Awaited<ReturnType<typeof fetchNetworkSnapshot>>;
 
@@ -36,24 +38,64 @@ const colorMap: Record<NetworkName, string> = {
   youtube: "#ff0000",
 };
 
+type DashboardData = ReturnType<typeof getDashboardData>;
+
+const toNavKey = (network: NetworkName): LocaleKey =>
+  (`nav.${network}` as unknown) as LocaleKey;
+
+function formatAccountHandle(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("@")) return trimmed;
+  const slug = trimmed
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug ? `@${slug}` : trimmed;
+}
+
+function formatDuration(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return "0m00s";
+  }
+  const total = Math.round(seconds);
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${mins}m${secs.toString().padStart(2, "0")}s`;
+}
+
 export function NetworkDashboard({ network }: { network: NetworkName }) {
+  const { prefs } = usePreferences();
+  const { t } = useLanguage();
   const [period, setPeriod] = React.useState<Period>("7d");
-  const [data, setData] = React.useState(() =>
-    getDashboardData(periodToDays["7d"], network)
+  const [data, setData] = React.useState<DashboardData | null>(() =>
+    prefs.showDemoData ? getDashboardData(periodToDays["7d"], network) : null
   );
   const [snapshot, setSnapshot] = React.useState<NetworkSnapshot | null>(null);
   const [loadingSnapshot, setLoadingSnapshot] = React.useState(false);
-  const [snapshotError, setSnapshotError] = React.useState<string | null>(null);
+  const [snapshotError, setSnapshotError] = React.useState<"api" | null>(null);
 
   const {
     state: { accounts },
   } = useAppState();
   const accountsOfNetwork = getAccountsByNetwork(accounts, network);
 
+  const accountSignature = React.useMemo(
+    () =>
+      accountsOfNetwork
+        .map((account) => `${account.network}:${account.displayName}`.toLowerCase())
+        .join("|"),
+    [accountsOfNetwork]
+  );
+
   React.useEffect(() => {
+    if (!prefs.showDemoData) {
+      setData(null);
+      return;
+    }
     const next = getDashboardData(periodToDays[period], network);
     setData(next);
-  }, [period, network]);
+  }, [period, network, prefs.showDemoData]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -61,7 +103,10 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     const days = range === "all" ? 365 : range;
     setLoadingSnapshot(true);
     setSnapshotError(null);
-    fetchNetworkSnapshot(network, days)
+    const handles = accountsOfNetwork
+      .map((account) => formatAccountHandle(account.displayName))
+      .filter((value) => value.length > 0);
+    fetchNetworkSnapshot(network, days, handles)
       .then((payload) => {
         if (!cancelled) {
           setSnapshot(payload);
@@ -72,14 +117,14 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         if (!cancelled) {
           console.error(`Failed to load snapshot for ${network}`, err);
           setSnapshot(null);
-          setSnapshotError(err instanceof Error ? err.message : String(err));
+          setSnapshotError("api");
           setLoadingSnapshot(false);
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [network, period]);
+  }, [network, period, accountSignature]);
 
   const fmtDate = (isoDate: string) =>
     `${isoDate.slice(8, 10)}/${isoDate.slice(5, 7)}`;
@@ -88,8 +133,11 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     if (snapshot?.profile.views) {
       return snapshot.profile.views;
     }
-    return data.trendStack.reduce((s, d) => s + (d[network] as number), 0);
-  }, [snapshot, data.trendStack, network]);
+    if (prefs.showDemoData && data) {
+      return data.trendStack.reduce((s, d) => s + (d[network] as number), 0);
+    }
+    return 0;
+  }, [snapshot, data, network, prefs.showDemoData]);
 
   type DashboardPost = MockPost & { url?: string };
 
@@ -123,8 +171,11 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         .sort((a, b) => (b.engagementRate || 0) - (a.engagementRate || 0))
         .slice(0, 6);
     }
-    return data.topPosts.map((post) => ({ ...post, url: "#" }));
-  }, [snapshot, data.topPosts, network]);
+    if (prefs.showDemoData && data) {
+      return data.topPosts.map((post) => ({ ...post, url: "#" }));
+    }
+    return [];
+  }, [snapshot, data, network, prefs.showDemoData]);
 
   const averageEngagement = React.useMemo(() => {
     if (snapshot?.profile.engagementRate !== undefined) {
@@ -137,31 +188,71 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
       );
       return sum / snapshot.posts.length;
     }
-    if (data.topPosts.length) {
+    if (prefs.showDemoData && data?.topPosts.length) {
       const sum = data.topPosts.reduce((acc, p) => acc + p.engagementRate, 0);
       return sum / data.topPosts.length;
     }
     return 0;
-  }, [snapshot, data.topPosts]);
+  }, [snapshot, data, prefs.showDemoData]);
+
+  const chartRows = React.useMemo(() => {
+    if (snapshot?.trends?.length) {
+      return snapshot.trends.map((point) => ({
+        date: point.date,
+        [network]: point.views,
+      }));
+    }
+    if (prefs.showDemoData && data) {
+      return data.trendStack;
+    }
+    return [] as Array<Record<string, number | string>>;
+  }, [snapshot, network, data, prefs.showDemoData]);
+
+  const chartIsEmpty = chartRows.length === 0;
+
+  const watchTimeHours = snapshot?.profile.watchTimeHours ?? 0;
+  const avgDurationSeconds = snapshot?.profile.avgViewDurationSeconds ??
+    (watchTimeHours && snapshot?.profile.views
+      ? Math.round((watchTimeHours * 3600) / Math.max(snapshot.profile.views, 1))
+      : 0);
+  const retentionRate = snapshot?.profile.audienceRetentionRate ?? 0;
+  const published = snapshot?.profile.videosPublished ?? snapshot?.posts?.length ?? 0;
 
   const kpis = [
-    { label: "Vues", value: totalViews.toLocaleString() },
+    { label: t("network.kpi.totalViews"), value: totalViews.toLocaleString() },
     {
-      label: "Posts (période)",
-      value: (snapshot?.posts?.length ?? data.topPosts.length).toString(),
+      label: t("network.kpi.watchTime"),
+      value: watchTimeHours > 0 ? `${watchTimeHours.toFixed(1)} h` : "0 h",
     },
     {
-      label: "Comptes rattachés",
+      label: t("network.kpi.avgDuration"),
+      value: formatDuration(avgDurationSeconds ?? 0),
+    },
+    {
+      label: t("network.kpi.retention"),
+      value: `${(retentionRate * 100).toFixed(1)}%`,
+    },
+    {
+      label: t("network.kpi.published"),
+      value: Math.round(published).toString(),
+    },
+    {
+      label: t("network.kpi.accounts"),
       value: accountsOfNetwork.length.toString(),
     },
     {
-      label: "Engagement moyen",
+      label: t("network.kpi.engagement"),
       value: `${(averageEngagement * 100).toFixed(1)}%`,
     },
   ];
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen overflow-auto">
+      {!prefs.showDemoData && !snapshot && !loadingSnapshot && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-2xl">
+          {t("network.demoDisabledNotice")}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <SocialIcon name={network} size={28} />
@@ -215,21 +306,33 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         <h3 className="font-semibold mb-4 text-lg">
           Tendances des vues • {period.toUpperCase()}
         </h3>
-        <ResponsiveContainer width="100%" height={360}>
-          <BarChart data={data.trendStack}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tickFormatter={fmtDate} />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar
-              dataKey={network}
-              name={network}
-              fill={colorMap[network]}
-              radius={[4, 4, 0, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        {loadingSnapshot ? (
+          <div className="h-[360px] flex items-center justify-center text-gray-400">
+            {t("loading")}
+          </div>
+        ) : chartIsEmpty ? (
+          <div className="h-[360px] flex items-center justify-center text-gray-400 text-center px-4">
+            {prefs.showDemoData
+              ? t("dashboard.topContent.noData")
+              : t("network.demoDisabledNotice")}
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={360}>
+            <BarChart data={chartRows}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tickFormatter={fmtDate} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar
+                dataKey={network}
+                name={t(toNavKey(network))}
+                fill={colorMap[network]}
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
         <div className="mt-3 text-xs text-gray-500">
           Total vues sur la période : {totalViews.toLocaleString()}
         </div>
@@ -243,7 +346,9 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
           <p className="text-gray-500 text-sm">Chargement des contenus…</p>
         )}
         {snapshotError && (
-          <p className="text-amber-600 text-sm mb-3">{snapshotError}</p>
+          <p className="text-amber-600 text-sm mb-3">
+            {t("network.error.snapshot", { network: t(toNavKey(network)) })}
+          </p>
         )}
         {postsForDisplay.length === 0 ? (
           <p className="text-gray-500 text-sm">Aucun contenu sur cette période.</p>

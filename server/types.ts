@@ -8,6 +8,10 @@ export interface KPI {
   comments: number;
   shares?: number;
   engagementRate?: number;
+  watchTimeHours?: number;
+  avgViewDurationSeconds?: number;
+  audienceRetentionRate?: number;
+  videosPublished?: number;
   period: { from: string; to: string };
 }
 
@@ -59,4 +63,5 @@ export interface OverviewAnalytics {
   topPosts: NormalizedPost[];
   summaries: Record<Network, AnalyticsSummary>;
   trends: TrendPoint[];
+  watchTimeHours: Record<Network, number>;
 }
