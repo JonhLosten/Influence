@@ -1,4 +1,6 @@
-export type Network = "instagram" | "facebook" | "tiktok" | "youtube";
+import type { NetworkId } from '@influence/sdk';
+
+export type Network = NetworkId;
 
 export interface KPI {
   followers: number;
@@ -41,7 +43,7 @@ export interface AnalyticsSummary {
   headline: LocalizedCopy;
   description: LocalizedCopy;
   delta: number;
-  direction: "up" | "down";
+  direction: 'up' | 'down';
   baseline: number;
 }
 

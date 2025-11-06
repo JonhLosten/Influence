@@ -3,20 +3,24 @@
 node_modules/
 npm-debug.log
 yarn-error.log
+pnpm-lock.yaml
+
+# Build outputs
 dist/
+apps/*/dist/
+apps/web/build/
+release/
+out/
 build/
 .cache/
 
 # Environnement local
 .env
 .env.local
+apps/server/.env
 
 # Système
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-
-# Vite / Electron build
-out/
-release/

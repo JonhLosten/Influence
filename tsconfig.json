@@ -1,34 +1,11 @@
 {
+  "extends": "@influence/config/tsconfig",
   "compilerOptions": {
-    /* === Sortie du code === */
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "outDir": "dist",
-
-    /* === React + JSX === */
-    "jsx": "react-jsx",
-
-    /* === Compatibilité imports === */
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-
-    /* === Règles strictes TypeScript === */
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-
-    /* === Résolution des chemins === */
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": [ "*" ]
-    },
-
-    /* === Autres === */
-    "isolatedModules": true,
-    "resolveJsonModule": true
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "allowJs": false
   },
-
-  "include": [ "src", "server" ],
-  "exclude": [ "node_modules", "dist", "out" ]
+  "include": ["tests", "apps", "packages"],
+  "exclude": ["node_modules", "**/dist"]
 }
