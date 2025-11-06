@@ -1,36 +1,25 @@
 {
-  "name": "influenceops",
-  "version": "1.0.0",
+  "name": "influence",
+  "version": "0.1.0",
   "private": true,
-  "authors": "raphael.lcv",
-  "description": "Logiciel de tableau de bord pour influenceurs et entrepreneurs",
-  "main": "app/main.cjs",
-  "type": "commonjs",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "postinstall": "electron-forge import || echo forge-ready",
-    "dev": "concurrently -k \"npm:dev:*\"",
-    "dev:server": "tsx watch server/index.ts",
-    "dev:renderer": "vite",
-    "dev:electron": "wait-on tcp:5173 && electron .",
-    "make": "electron-forge make",
-    "start": "electron-forge start",
-    "build:web": "vite build --config vite.config.mjs --emptyOutDir",
-    "build:server": "tsc -p tsconfig.server.json",
-    "package": "electron-forge package",
-    "typecheck": "npm run typecheck:renderer && npm run typecheck:server",
-    "lint": "node ./scripts/check-translations.mjs",
+    "prepare": "husky install",
+    "dev": "turbo run dev --parallel --filter=@influence/web",
+    "dev:desktop": "turbo run dev --filter=@influence/desktop",
+    "dev:web": "turbo run dev --filter=@influence/web",
+    "dev:server": "turbo run dev --filter=@influence/server",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint .",
+    "format": "prettier --check .",
     "test": "tsx --test \"tests/**/*.ts\"",
-    "quality": "npm run lint && npm run test && npm run typecheck",
-    "typecheck:renderer": "tsc --noEmit -p tsconfig.app.json",
-    "typecheck:server": "tsc --noEmit -p tsconfig.server.json"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "^5.0.4",
-    "autoprefixer": "^10.4.21",
-    "electron-is-dev": "^3.0.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "recharts": "^2.12.7"
+    "quality": "npm run lint && npm run typecheck && npm run test",
+    "make": "turbo run build --filter=@influence/desktop && electron-forge make",
+    "package": "turbo run build --filter=@influence/desktop && electron-forge package"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
@@ -40,20 +29,26 @@
     "@electron-forge/maker-zip": "^7.10.2",
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
-    "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^9.11.1",
     "@types/node": "^22.7.4",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "concurrently": "^8.2.2",
     "electron": "^31.3.0",
     "electron-squirrel-startup": "^1.0.1",
-    "postcss": "^8.4.47",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3",
     "tailwindcss": "^3.4.13",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
+    "turbo": "^2.1.1",
     "tsx": "^4.20.6",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8",
-    "wait-on": "^8.0.0"
-  }
+    "typescript-eslint": "^8.8.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
+  },
+  "main": "apps/desktop/dist/main.js"
 }

@@ -1,40 +1,59 @@
-
 # InfluenceOps 🧠
-Tableau de bord multi-réseaux (Instagram, Facebook, TikTok, YouTube).  
-**Desktop** via Electron, **UI** React + Vite + Tailwind, **API** locale Express.  
-**Langues** : Français (par défaut) et Anglais — réglable dans *Paramètres* (préférence mémorisée).
 
-## 🚀 Démarrage (Windows)
-1. Installer Node.js (≥ 20) et npm.
-2. Copier ce dossier, ouvrir un terminal dans le dossier.
-3. Copier `.env.example` en `.env` et mettre votre clé Ayrshare (optionnel pour démo).
-4. Installer : `npm install`
-5. Dev : `npm run dev` (l'app Electron s'ouvre automatiquement)
-6. Build .exe : `npm run make` (installeur dans `out/`)
+Tableau de bord multi-réseaux (Instagram, Facebook, TikTok, YouTube).
+- **Desktop** via Electron (processus principal + preload sécurisés)
+- **UI** React + Vite + Tailwind (renderer sandboxé)
+- **API locale** HTTP (Express-like) validée avec Zod
+- **Monorepo TypeScript** propulsé par Turborepo & workspaces
 
-> Sans clé Ayrshare, l'app fonctionne en **mode démo** (données factices).
+## 🚀 Installation
 
-## 🔐 Configuration
-- Créez un compte Ayrshare et récupérez votre **API Key**.
-- Placez-la dans `.env` → `AYRSHARE_API_KEY=...`
+1. Installer Node.js ≥ 20.
+2. Cloner le dépôt puis exécuter `npm install` (les workspaces seront reliés automatiquement).
+3. (Optionnel) Copier `.env.example` dans `apps/server/.env` et y ajouter votre clé Ayrshare (`AYRSHARE_API_KEY=...`).
 
-## 🌐 Langues
-- Par défaut : **Français**.
-- Changez la langue dans **Paramètres** → la préférence est enregistrée (localStorage) et appliquée à chaque lancement.
+> 💡 Sans clé Ayrshare, l'app fonctionne en **mode démo** (données factices).
 
-## 🧭 Navigation
-- **Tableau de bord** : synthèse globale + top contenus.
-- **Réseaux** : Instagram, Facebook, TikTok, YouTube.
-- **Paramètres** : langue (FR/EN).
+## 🧱 Structure
+
+- `apps/desktop` : processus Electron (main + preload), CSP stricte, IPC typé.
+- `apps/web` : renderer React/Vite, alias `@/` vers `apps/web/src`.
+- `apps/server` : API locale (Node HTTP) + pipeline analytique.
+- `packages/sdk` : contrats TypeScript (IPC, providers sociaux, réseaux supportés).
+- `packages/db` : configuration SQLite + Drizzle ORM (WAL activé, schémas principaux).
+- `packages/ui` : design system partagé (premiers composants, ex. `<Button />`).
+- `packages/config` : tsconfig strict, ESLint flat config, Prettier partagé.
 
 ## 📦 Scripts utiles
-- `npm run dev` : serveur API + Vite + Electron.
-- `npm run make` : build production (.exe).
-- `npm run build:web` : génère la version statique Vite (utilisée pour `gh-pages`).
 
-## 🌍 Publication web
-- Chaque `push` sur `main` ou `work` déclenche une action GitHub qui :
-  - installe les dépendances,
-  - exécute `npm run build:web`,
-  - publie automatiquement le contenu du dossier `dist/` sur la branche `gh-pages`.
-- Un déclenchement manuel est possible via l'onglet **Actions** → *Deploy to GitHub Pages*.
+| Commande | Description |
+| --- | --- |
+| `npm run dev` | Lance Vite (renderer) avec rechargement à chaud. |
+| `npm run dev:server` | Watch mode pour l'API locale (`apps/server`). |
+| `npm run dev:desktop` | Compile le processus Electron et lance l'app (nécessite un build du renderer). |
+| `npm run build` | Exécute `vite build` + `tsc` sur l'ensemble du monorepo via Turborepo. |
+| `npm run typecheck` | Vérifie le typage strict de tous les workspaces. |
+| `npm run lint` | Lint TypeScript/JS (ESLint config partagée). |
+| `npm run format` | Vérifie le formatage (Prettier). |
+| `npm run test` | Suite de tests Node (Vitest-like via `node:test`). |
+| `npm run make` | Build desktop (Electron Forge) après compilation. |
+
+## 🌐 Langues & Préférences
+
+- Langues disponibles : **Français** (par défaut) et **Anglais** via Paramètres.
+- Les préférences (langue, thème…) sont persistées localement (`localStorage`).
+
+## 🔐 Sécurité & Données
+
+- IPC Electron validé par Zod (channels whitelists dans `packages/sdk`).
+- Secrets et tokens destinés à être stockés via `keytar` (intégration à venir).
+- Base locale SQLite (Drizzle + better-sqlite3) avec WAL pour de meilleures performances.
+
+## 🛣️ Roadmap rapide
+
+1. Implémenter les providers réels (`packages/sdk/providers/*`).
+2. Finaliser la persistance (migrations Drizzle, seed, keytar pour secrets).
+3. Ajouter tests E2E Playwright + pipeline CI multi-OS.
+4. Étendre le design system (`packages/ui`) et intégrer Storybook.
+
+Pour plus de détails, consulter [ARCHITECTURE.md](./ARCHITECTURE.md).
