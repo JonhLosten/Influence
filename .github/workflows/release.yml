@@ -1,0 +1,93 @@
+# .github/workflows/release.yml
+name: Release & Publish Electron App
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Restore Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: ./.turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Build Electron App and Renderer
+        run: npm run build --workspace=apps/desktop
+        env:
+          NODE_ENV: production
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        # Need to install browsers even if testing Electron, as Playwright uses its browser drivers
+
+      - name: Run Electron E2E tests
+        working-directory: apps/desktop # Run tests from the desktop app directory
+        run: npx playwright test --project=electron
+        env:
+          # Ensure the server starts for E2E tests if it's not managed by webServer config
+          # Playwright's webServer config handles starting the server, so no explicit 'npm run dev' here.
+          PORT: 3000 # Ensure the server starts on this port for tests
+          NODE_ENV: test
+          # You might need to set SENTRY_DSN_ELECTRON_MAIN=false and ENABLE_SENTRY_CRASH_REPORTING=false
+          # for tests if Sentry interferes or if you don't want test errors in Sentry.
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-build-${{ runner.os }}
+          path: apps/desktop/dist # Assuming electron-builder outputs to apps/desktop/dist
+
+      - name: Create Release (Draft) - macOS
+        if: startsWith(runner.os, 'macOS')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: 'apps/desktop/dist/*.dmg'
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release (Draft) - Windows
+        if: startsWith(runner.os, 'Windows')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: 'apps/desktop/dist/*.exe'
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release (Draft) - Linux
+        if: startsWith(runner.os, 'Linux')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: 'apps/desktop/dist/*.AppImage'
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save Turborepo cache
+        uses: actions/cache/save@v4
+        with:
+          path: ./.turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}

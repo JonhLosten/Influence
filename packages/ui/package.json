@@ -1,18 +1,36 @@
 {
   "name": "@influence/ui",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
+  "version": "1.0.0",
+  "description": "",
   "main": "src/index.tsx",
-  "peerDependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "dependencies": {
-    "clsx": "^2.1.0"
-  },
+  "types": "src/index.tsx",
   "scripts": {
-    "build": "tsc -p ./tsconfig.json",
-    "typecheck": "tsc --noEmit -p ./tsconfig.json"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "dev": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.1.10",
+    "@storybook/addon-interactions": "^8.1.10",
+    "@storybook/addon-links": "^8.1.10",
+    "@storybook/addon-onboarding": "^8.1.10",
+    "@storybook/blocks": "^8.1.10",
+    "@storybook/react": "^8.1.10",
+    "@storybook/react-vite": "^8.1.10",
+    "@storybook/test": "^8.1.10",
+    "eslint-plugin-storybook": "^0.8.0",
+    "storybook": "^8.1.10",
+    "typescript": "^5.5.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vitest": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.4.6"
   }
 }

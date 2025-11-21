@@ -1,16 +1,32 @@
 {
   "name": "@influence/db",
   "version": "0.0.1",
-  "private": true,
-  "type": "module",
+  "description": "",
   "main": "src/index.ts",
-  "dependencies": {
-    "better-sqlite3": "^9.6.0",
-    "drizzle-orm": "^0.33.0",
-    "drizzle-kit": "^0.25.0"
-  },
+  "types": "src/index.ts",
   "scripts": {
-    "build": "tsc -p ./tsconfig.json",
-    "typecheck": "tsc --noEmit -p ./tsconfig.json"
+    "build:drizzle-config": "tsc --project tsconfig.json drizzle.config.ts",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "node --loader ts-node/esm src/migrate.ts",
+    "db:seed": "node --loader ts-node/esm src/seed.ts",
+    "db:push": "drizzle-kit push --config=drizzle.config.ts",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "drizzle-kit": "^0.22.8",
+    "typescript": "^5.5.2",
+    "ts-node": "^10.9.2",
+    "vitest": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.1.2",
+    "drizzle-orm": "^0.31.2",
+    "uuid": "^10.0.0"
   }
 }

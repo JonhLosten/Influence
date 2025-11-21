@@ -1,91 +1,57 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+// apps/web/src/store/usePreferences.tsx
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import React, { createContext, useContext } from "react";
 
-export interface PreferencesState {
-  showDemoData: boolean;
+interface PreferencesState {
+  darkMode: boolean;
+  hasCompletedOnboarding: boolean;
+  toggleDarkMode: () => void;
+  completeOnboarding: () => void;
 }
 
-interface PreferencesContextValue {
-  prefs: PreferencesState;
-  setShowDemoData: (value: boolean) => void;
-}
-
-const STORAGE_KEY = "influenceops.preferences";
-const DEFAULT_STATE: PreferencesState = {
-  showDemoData: false,
-};
-
-function readStoredPreferences(): PreferencesState {
-  if (typeof window === "undefined") {
-    return DEFAULT_STATE;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_STATE;
-    const parsed = JSON.parse(raw) as Partial<PreferencesState> | null;
-    if (!parsed || typeof parsed !== "object") {
-      return DEFAULT_STATE;
+export const usePreferences = create<PreferencesState>()(
+  persist(
+    (set) => ({
+      darkMode: window.matchMedia("(prefers-color-scheme: dark)").matches, // Default to system preference
+      hasCompletedOnboarding: false,
+      toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      completeOnboarding: () => set(() => ({ hasCompletedOnboarding: true })),
+    }),
+    {
+      name: "influence-preferences-storage", // unique name
+      storage: createJSONStorage(() => localStorage), // Use localStorage for persistence
     }
-    return {
-      showDemoData:
-        typeof parsed.showDemoData === "boolean"
-          ? parsed.showDemoData
-          : DEFAULT_STATE.showDemoData,
-    };
-  } catch (error) {
-    console.warn("usePreferences: unable to read stored preferences", error);
-    return DEFAULT_STATE;
-  }
+  )
+);
+
+// Create a context provider for the preferences store
+// This is useful if you want to avoid direct `usePreferences()` calls everywhere
+interface PreferencesContextType {
+  preferences: PreferencesState;
 }
 
-function persistPreferences(state: PreferencesState) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (error) {
-    console.warn("usePreferences: unable to persist preferences", error);
-  }
-}
-
-const PreferencesContext = createContext<PreferencesContextValue | undefined>(
+const PreferencesContext = createContext<PreferencesContextType | undefined>(
   undefined
 );
 
 export const PreferencesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [prefs, setPrefs] = useState<PreferencesState>(() =>
-    readStoredPreferences()
-  );
-
-  const setShowDemoData = (value: boolean) => {
-    setPrefs((prev) => {
-      if (prev.showDemoData === value) return prev;
-      const next = { ...prev, showDemoData: value };
-      persistPreferences(next);
-      return next;
-    });
-  };
-
-  const value = useMemo<PreferencesContextValue>(
-    () => ({
-      prefs,
-      setShowDemoData,
-    }),
-    [prefs]
-  );
-
+  const preferences = usePreferences();
   return (
-    <PreferencesContext.Provider value={value}>
+    <PreferencesContext.Provider value={{ preferences }}>
       {children}
     </PreferencesContext.Provider>
   );
 };
 
-export function usePreferences() {
-  const ctx = useContext(PreferencesContext);
-  if (!ctx) {
-    throw new Error("usePreferences must be used within PreferencesProvider");
+export const usePreferencesContext = () => {
+  const context = useContext(PreferencesContext);
+  if (context === undefined) {
+    throw new Error(
+      "usePreferencesContext must be used within a PreferencesProvider"
+    );
   }
-  return ctx;
-}
+  return context;
+};
