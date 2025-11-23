@@ -1,4 +1,5 @@
 import { defineConfig, externalizeDepsPlugin, swcPlugin } from "electron-vite";
+import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 
 export default defineConfig({
@@ -11,6 +12,7 @@ export default defineConfig({
     },
     build: {
       rollupOptions: {
+        input: "src/main.ts",
         external: [
           "better-sqlite3",
           "keytar",
@@ -49,6 +51,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin(), swcPlugin()],
     build: {
       rollupOptions: {
+        input: "src/preload.ts",
         external: ["electron"], // Externalize Electron for preload
       },
     },
@@ -65,7 +68,7 @@ export default defineConfig({
     },
   },
   renderer: {
-    root: ".",
+    root: "../web",
     plugins: [react()],
     resolve: {
       alias: {
@@ -73,7 +76,9 @@ export default defineConfig({
       },
     },
     build: {
+      outDir: "out/renderer",
       rollupOptions: {
+        input: resolve(__dirname, "../web/index.html"),
         external: ["electron"],
       },
     },

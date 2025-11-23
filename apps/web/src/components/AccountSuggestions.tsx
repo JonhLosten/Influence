@@ -1,5 +1,5 @@
 import React from "react";
-import { NetworkName } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 
 interface Suggestion {
   id: string;

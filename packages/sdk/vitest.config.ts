@@ -6,6 +6,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["../../tests/setupNodeTests.ts"], // Shared setup for Node environment
     exclude: ["node_modules/"],
+    include: ["src/**/*.test.ts"], // Only include test files from the src directory
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

@@ -1,23 +1,13 @@
 import React from "react";
 import { useLanguage } from "../i18n";
-import {
-  useAppState,
-  NetworkName,
-  getAccountsByNetwork,
-} from "../store/useAppState";
+import { useAppState, getAccountsByNetwork } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 import { SocialIcon } from "../components/SocialIcon";
 import { AddThingModal } from "../components/AddThingModal";
 import { AddFolderModal } from "../components/AddFolderModal";
 import { AddAccountModal } from "../components/AddAccountModal";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-
-export type Route =
-  | "dashboard"
-  | "instagram"
-  | "facebook"
-  | "tiktok"
-  | "youtube"
-  | "settings";
+import type { Route } from "../routes";
 
 interface AccountRowProps {
   id: string;
@@ -67,15 +57,23 @@ export function Sidebar({
 }) {
   const {
     state: { networkOrder, accounts, folders, activeFolder },
-    actions: { reorderNetworks, addAccount, removeAccount, addFolder, removeFolder, setActiveFolder },
+    actions: {
+      reorderNetworks,
+      addAccount,
+      removeAccount,
+      addFolder,
+      removeFolder,
+      setActiveFolder,
+    },
   } = useAppState();
   const { t, lang } = useLanguage();
 
-  const [openGroups, setOpenGroups] = React.useState<Record<NetworkName, boolean>>({
+  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
     instagram: true,
     facebook: true,
     tiktok: true,
     youtube: true,
+    x: true,
   });
 
   const [showChooser, setShowChooser] = React.useState(false);
@@ -164,6 +162,24 @@ export function Sidebar({
               ⚙
             </button>
           </div>
+
+          {/* New Video Publisher Button */}
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              onClick={() => onNavigate("video_publisher")}
+              className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                route === "video_publisher"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white hover:bg-blue-50 text-gray-800"
+              }`}
+              title={t("nav.videoPublisher") || "Publier une vidéo"}
+            >
+              <span className="text-lg leading-none">🎥</span>
+              <span className="truncate">
+                {t("nav.videoPublisher") || "Publier une vidéo"}
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="h-px bg-gray-200 my-3" />
@@ -173,7 +189,9 @@ export function Sidebar({
 
   function NetworkGroup({ n, idx }: { n: NetworkName; idx: number }) {
     const listAll = getAccountsByNetwork(accounts, n);
-    const list = activeFolder ? listAll.filter((a) => a.folder === activeFolder) : listAll;
+    const list = activeFolder
+      ? listAll.filter((a) => a.folder === activeFolder)
+      : listAll;
     const count = list.length;
 
     return (
@@ -185,7 +203,9 @@ export function Sidebar({
               onNavigate(n as Route);
             }}
             className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl ${
-              route === n ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-gray-800"
+              route === n
+                ? "bg-blue-600 text-white"
+                : "hover:bg-blue-50 text-gray-800"
             }`}
             title={t("sidebar.toggleGroup")}
           >
@@ -225,7 +245,9 @@ export function Sidebar({
         {openGroups[n] && (
           <div className="p-2 space-y-1">
             {count === 0 ? (
-              <div className="text-xs text-gray-500 px-2 py-1">{t("sidebar.empty")}</div>
+              <div className="text-xs text-gray-500 px-2 py-1">
+                {t("sidebar.empty")}
+              </div>
             ) : (
               list.map((a) => (
                 <AccountRow
@@ -238,7 +260,9 @@ export function Sidebar({
                     setPendingDelete({
                       type: "account",
                       idOrName: id,
-                      label: t("sidebar.confirmAccount", { name: a.displayName }),
+                      label: t("sidebar.confirmAccount", {
+                        name: a.displayName,
+                      }),
                     })
                   }
                   deleteLabel={deleteAccountLabel}

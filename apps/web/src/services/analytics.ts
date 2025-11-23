@@ -1,4 +1,4 @@
-import { NetworkName } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 import { resolveApiUrl } from "./api";
 
 export interface NetworkProfile {
@@ -61,14 +61,18 @@ export async function fetchNetworkSnapshot(
   network: NetworkName,
   days: number
 ): Promise<NetworkSnapshotResponse> {
-  const res = await fetch(resolveApiUrl(`/api/networks/${network}?days=${days}`));
+  const res = await fetch(
+    resolveApiUrl(`/api/networks/${network}?days=${days}`)
+  );
   if (!res.ok) {
     throw new Error(`API ${res.status}`);
   }
   return res.json();
 }
 
-export async function fetchOverviewAnalytics(days: number): Promise<OverviewAnalytics> {
+export async function fetchOverviewAnalytics(
+  days: number
+): Promise<OverviewAnalytics> {
   const res = await fetch(resolveApiUrl(`/api/overview?days=${days}`));
   if (!res.ok) {
     throw new Error(`API ${res.status}`);

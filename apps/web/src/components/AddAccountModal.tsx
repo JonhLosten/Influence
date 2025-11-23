@@ -1,7 +1,8 @@
 import React from "react";
-import { NetworkName } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 import { suggestAccounts } from "../services/suggestAccounts";
 import { useLanguage } from "../i18n";
+import { usePreferences } from "../store/usePreferences";
 
 export const AddAccountModal: React.FC<{
   isOpen: boolean;
@@ -17,9 +18,12 @@ export const AddAccountModal: React.FC<{
   availableFolders = ["Par défaut"],
 }) => {
   const { t } = useLanguage();
+  const { prefs } = usePreferences();
   const [network, setNetwork] = React.useState<NetworkName>("instagram");
   const [query, setQuery] = React.useState("");
-  const [folder, setFolder] = React.useState(availableFolders[0] || "Par défaut");
+  const [folder, setFolder] = React.useState(
+    availableFolders[0] || "Par défaut"
+  );
   const [results, setResults] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState("");
@@ -33,7 +37,7 @@ export const AddAccountModal: React.FC<{
   }, [isOpen]);
 
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !prefs.showDemoData) return;
     const q = query.trim();
     if (!q) {
       setResults([]);
@@ -47,12 +51,13 @@ export const AddAccountModal: React.FC<{
       setLoading(false);
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, network, isOpen]);
+  }, [query, network, isOpen, prefs.showDemoData]);
 
   const isDuplicate = (name: string) => {
     const lower = name.trim().toLowerCase();
     return existing.some(
-      (a) => a.network === network && a.displayName.trim().toLowerCase() === lower
+      (a) =>
+        a.network === network && a.displayName.trim().toLowerCase() === lower
     );
   };
 
@@ -167,7 +172,8 @@ export const AddAccountModal: React.FC<{
                         {s.displayName}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {s.handle} • {t("modal.account.followers", {
+                        {s.handle} •{" "}
+                        {t("modal.account.followers", {
                           count: s.followers.toLocaleString(),
                         })}
                       </div>
@@ -195,14 +201,28 @@ export const AddAccountModal: React.FC<{
             </ul>
           )}
 
-          {!loading && query.trim() && results.length === 0 && (
-            <div className="text-xs text-gray-500 mt-2">
-              {t("modal.account.empty")}
-            </div>
-          )}
+          {!loading &&
+            query.trim() &&
+            results.length > 0 &&
+            !prefs.showDemoData && (
+              <div className="text-xs text-gray-500 mt-2">
+                {t("modal.account.suggestionsDisabled")}
+              </div>
+            )}
+
+          {!loading &&
+            query.trim() &&
+            results.length === 0 &&
+            prefs.showDemoData && (
+              <div className="text-xs text-gray-500 mt-2">
+                {t("modal.account.empty")}
+              </div>
+            )}
         </div>
 
-        {message && <div className="text-center text-sm text-blue-600">{message}</div>}
+        {message && (
+          <div className="text-center text-sm text-blue-600">{message}</div>
+        )}
 
         <div className="flex justify-end gap-2 pt-2">
           <button

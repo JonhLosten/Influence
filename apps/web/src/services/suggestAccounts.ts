@@ -1,4 +1,4 @@
-import { NetworkName } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 import { resolveApiUrl } from "./api";
 
 type Suggestion = {
@@ -164,7 +164,11 @@ function getCachedSuggestions(network: NetworkName, query: string) {
   return hit.items;
 }
 
-function storeSuggestions(network: NetworkName, query: string, items: Suggestion[]) {
+function storeSuggestions(
+  network: NetworkName,
+  query: string,
+  items: Suggestion[]
+) {
   const cache = readCache();
   const key = cacheKey(network, query);
   cache.entries[key] = {
@@ -174,7 +178,10 @@ function storeSuggestions(network: NetworkName, query: string, items: Suggestion
   writeCache(cache);
 }
 
-export async function suggestAccounts(network: NetworkName, query: string): Promise<Suggestion[]> {
+export async function suggestAccounts(
+  network: NetworkName,
+  query: string
+): Promise<Suggestion[]> {
   if (!query.trim()) return [];
 
   const cached = getCachedSuggestions(network, query);
@@ -194,7 +201,9 @@ export async function suggestAccounts(network: NetworkName, query: string): Prom
     if (!res.ok) throw new Error(`Suggest API ${res.status}`);
 
     const payload = (await res.json()) as { suggestions?: Suggestion[] };
-    const results = Array.isArray(payload?.suggestions) ? payload.suggestions : [];
+    const results = Array.isArray(payload?.suggestions)
+      ? payload.suggestions
+      : [];
 
     if (results.length > 0) {
       storeSuggestions(network, query, results);

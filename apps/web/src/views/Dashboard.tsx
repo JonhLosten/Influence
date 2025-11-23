@@ -11,11 +11,13 @@ import {
   Line,
 } from "recharts";
 
-import { useLanguage, LocaleKey } from "../i18n";
+import { useLanguage } from "../i18n";
+import type { LocaleKey } from "../i18n";
 import { SocialIcon } from "../components/SocialIcon";
-import { getDashboardData, MockPost } from "./_dataMock";
+import { getDashboardData } from "./_dataMock";
+import type { MockPost } from "./_dataMock";
 import { fetchOverviewAnalytics } from "../services/analytics";
-import { NetworkName } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 import { usePreferences } from "../store/usePreferences";
 
 export type Period = "7d" | "30d" | "90d" | "365d" | "all";
@@ -25,7 +27,7 @@ const periodToDays: Record<Period, number | "all"> = {
   "30d": 30,
   "90d": 90,
   "365d": 365,
-  "all": "all",
+  all: "all",
 };
 
 const periodLabels: Record<Period, { fr: string; en: string }> = {
@@ -56,30 +58,32 @@ const EMPTY_DASHBOARD_DATA: DashboardData = {
 };
 
 const toNavKey = (network: NetworkName): LocaleKey =>
-  (`nav.${network}` as unknown) as LocaleKey;
+  `nav.${network}` as unknown as LocaleKey;
 
 export const Dashboard: React.FC = () => {
   const { lang, t } = useLanguage();
   const { prefs } = usePreferences();
   const [period, setPeriod] = React.useState<Period>("7d");
   const [data, setData] = React.useState<DashboardData>(() =>
-    prefs.showDemoData ? getDashboardData(periodToDays["7d"]) : EMPTY_DASHBOARD_DATA
+    prefs.showDemoData
+      ? getDashboardData(periodToDays["7d"])
+      : EMPTY_DASHBOARD_DATA
   );
   const [loading, setLoading] = React.useState(false);
-  const [overview, setOverview] = React.useState<
-    Awaited<ReturnType<typeof fetchOverviewAnalytics>> | null
-  >(null);
+  const [overview, setOverview] = React.useState<Awaited<
+    ReturnType<typeof fetchOverviewAnalytics>
+  > | null>(null);
   const [overviewLoading, setOverviewLoading] = React.useState(false);
   const [overviewError, setOverviewError] = React.useState<"api" | null>(null);
-  const [selectedNetworks, setSelectedNetworks] = React.useState<NetworkName[]>(
-    NETWORKS
-  );
+  const [selectedNetworks, setSelectedNetworks] =
+    React.useState<NetworkName[]>(NETWORKS);
   const [topSort, setTopSort] = React.useState<"engagement" | "views">(
     "engagement"
   );
-  const [exportNotice, setExportNotice] = React.useState<
-    { status: "success" | "error"; message: string } | null
-  >(null);
+  const [exportNotice, setExportNotice] = React.useState<{
+    status: "success" | "error";
+    message: string;
+  } | null>(null);
 
   React.useEffect(() => {
     const range = periodToDays[period];
@@ -169,7 +173,8 @@ export const Dashboard: React.FC = () => {
 
   const chartData = React.useMemo(() => {
     if (!prefs.showDemoData) {
-      if (!overview?.trends?.length) return [] as Array<{ date: string; total: number }>;
+      if (!overview?.trends?.length)
+        return [] as Array<{ date: string; total: number }>;
       return overview.trends.map((point) => ({
         date: point.date,
         total: point.views,
@@ -220,27 +225,36 @@ export const Dashboard: React.FC = () => {
 
   const totalsForActiveNetworks = React.useMemo(() => {
     if (overview) {
-      return activeNetworks.reduce((acc, network) => {
-        acc[network] = overview.networks[network] ?? 0;
-        return acc;
-      }, {} as Record<NetworkName, number>);
+      return activeNetworks.reduce(
+        (acc, network) => {
+          acc[network] = overview.networks[network] ?? 0;
+          return acc;
+        },
+        {} as Record<NetworkName, number>
+      );
     }
 
     if (!prefs.showDemoData) {
-      return activeNetworks.reduce((acc, network) => {
-        acc[network] = 0;
-        return acc;
-      }, {} as Record<NetworkName, number>);
+      return activeNetworks.reduce(
+        (acc, network) => {
+          acc[network] = 0;
+          return acc;
+        },
+        {} as Record<NetworkName, number>
+      );
     }
 
-    return activeNetworks.reduce((acc, network) => {
-      const sum = chartData.reduce(
-        (total, day) => total + ((day[network] as number) ?? 0),
-        0
-      );
-      acc[network] = sum;
-      return acc;
-    }, {} as Record<NetworkName, number>);
+    return activeNetworks.reduce(
+      (acc, network) => {
+        const sum = chartData.reduce(
+          (total, day) => total + ((day[network] as number) ?? 0),
+          0
+        );
+        acc[network] = sum;
+        return acc;
+      },
+      {} as Record<NetworkName, number>
+    );
   }, [activeNetworks, chartData, overview, prefs.showDemoData]);
 
   const filteredPosts = React.useMemo(() => {
@@ -324,9 +338,11 @@ export const Dashboard: React.FC = () => {
     }
     const growthAbs = Math.abs(growthRate);
     if (growthAbs > 0) {
-      const key: LocaleKey = (growthRate >= 0
-        ? "dashboard.insights.growthPositive"
-        : "dashboard.insights.growthNegative") as LocaleKey;
+      const key: LocaleKey = (
+        growthRate >= 0
+          ? "dashboard.insights.growthPositive"
+          : "dashboard.insights.growthNegative"
+      ) as LocaleKey;
       list.push(
         t(key, {
           value: growthRate.toFixed(1),
@@ -384,10 +400,18 @@ export const Dashboard: React.FC = () => {
         });
         return;
       }
-      const header = ["id", "title", "network", "views", "engagement", "date", "url"];
+      const header = [
+        "id",
+        "title",
+        "network",
+        "views",
+        "engagement",
+        "date",
+        "url",
+      ];
       const escape = (value: string | number | undefined) => {
         const str = value === undefined ? "" : String(value);
-        if (str.includes("\"") || str.includes(",") || str.includes("\n")) {
+        if (str.includes('"') || str.includes(",") || str.includes("\n")) {
           return `"${str.replace(/"/g, '""')}"`;
         }
         return str;
@@ -431,19 +455,24 @@ export const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-8 bg-gray-50 min-h-screen overflow-auto" key={lang}>
+    <div
+      className="p-8 space-y-8 bg-gray-50 min-h-screen overflow-auto"
+      key={lang}
+    >
       {!prefs.showDemoData && !overview && !overviewLoading && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-2xl">
           {t("dashboard.demoDisabledNotice")}
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {([
-          ["instagram", totalsPerNetwork.instagram],
-          ["youtube", totalsPerNetwork.youtube],
-          ["tiktok", totalsPerNetwork.tiktok],
-          ["facebook", totalsPerNetwork.facebook],
-        ] as const).map(([network, total]) => (
+        {(
+          [
+            ["instagram", totalsPerNetwork.instagram],
+            ["youtube", totalsPerNetwork.youtube],
+            ["tiktok", totalsPerNetwork.tiktok],
+            ["facebook", totalsPerNetwork.facebook],
+          ] as const
+        ).map(([network, total]) => (
           <div
             key={network}
             className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between"
@@ -451,16 +480,18 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <SocialIcon name={network} size={24} />
-                <div className="text-sm text-gray-600 capitalize">{network}</div>
+                <div className="text-sm text-gray-600 capitalize">
+                  {network}
+                </div>
               </div>
               <div className="text-sm text-gray-400">{period}</div>
             </div>
-              <div className="text-3xl font-bold text-gray-800">
-                {Math.round(total).toLocaleString()} {" "}
-                <span className="text-base text-gray-500 font-normal">
-                  {viewsLabel}
-                </span>
-              </div>
+            <div className="text-3xl font-bold text-gray-800">
+              {Math.round(total).toLocaleString()}{" "}
+              <span className="text-base text-gray-500 font-normal">
+                {viewsLabel}
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -552,7 +583,10 @@ export const Dashboard: React.FC = () => {
         </div>
         <ul className="space-y-2">
           {insights.map((insight, index) => (
-            <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+            <li
+              key={index}
+              className="flex items-start gap-2 text-sm text-gray-700"
+            >
               <span className="mt-1 text-blue-500">•</span>
               <span>{insight}</span>
             </li>
@@ -568,9 +602,14 @@ export const Dashboard: React.FC = () => {
                 ? t("dashboard.direction.up")
                 : t("dashboard.direction.down");
             const deltaDisplay = `${summary.direction === "down" ? "-" : "+"}${summary.delta.toFixed(1)}%`;
-            const description = summary.description[lang as "fr" | "en"] ?? summary.description.fr;
+            const description =
+              summary.description[lang as "fr" | "en"] ??
+              summary.description.fr;
             return (
-              <div key={networkKey} className="bg-white border rounded-2xl p-4 shadow-sm space-y-2">
+              <div
+                key={networkKey}
+                className="bg-white border rounded-2xl p-4 shadow-sm space-y-2"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-semibold">
                     <SocialIcon name={networkKey} size={18} />
@@ -578,13 +617,17 @@ export const Dashboard: React.FC = () => {
                   </div>
                   <span
                     className={`text-xs font-semibold ${
-                      summary.direction === "down" ? "text-rose-500" : "text-emerald-600"
+                      summary.direction === "down"
+                        ? "text-rose-500"
+                        : "text-emerald-600"
                     }`}
                   >
                     {deltaDisplay}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 leading-snug">{description}</p>
+                <p className="text-sm text-gray-600 leading-snug">
+                  {description}
+                </p>
               </div>
             );
           })}
@@ -686,7 +729,9 @@ export const Dashboard: React.FC = () => {
               }
               className="border rounded-lg px-3 py-1 text-sm"
             >
-              <option value="engagement">{t("dashboard.sort.engagement")}</option>
+              <option value="engagement">
+                {t("dashboard.sort.engagement")}
+              </option>
               <option value="views">{t("dashboard.sort.views")}</option>
             </select>
           </div>
@@ -720,7 +765,9 @@ export const Dashboard: React.FC = () => {
                       {(p.engagementRate * 100).toFixed(1)}%
                     </div>
                   </div>
-                  <div className="font-medium text-gray-800 truncate">{p.title}</div>
+                  <div className="font-medium text-gray-800 truncate">
+                    {p.title}
+                  </div>
                 </div>
               </a>
             ))}

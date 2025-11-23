@@ -1,0 +1,537 @@
+
+> @influence/server@1.0.0 test
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v1.6.1 /home/user/Influence/apps/server
+
+ ❯ node_modules/pino/test/redact.test.js  (0 test)
+ ❯ node_modules/pino/test/basic.test.js  (0 test)
+ ❯ node_modules/pino/test/levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.js  (0 test)
+ ❯ node_modules/pino/test/browser.test.js  (0 test)
+ ❯ node_modules/pino/test/multistream.test.js  (0 test)
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts  (0 test)
+ ❯ node_modules/pino/test/browser-transmit.test.js  (0 test)
+ ❯ node_modules/pino/test/error.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/formatters.test.js  (0 test)
+ ❯ node_modules/pino/test/serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.ts  (0 test)
+ ❯ node_modules/pino/test/http.test.js  (0 test)
+ ❯ node_modules/pino/test/is-level-enabled.test.js  (0 test)
+ ❯ node_modules/json-schema-traverse/spec/index.spec.js  (0 test)
+ ❯ node_modules/pino/test/custom-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/module-link.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/uses-pino-config.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/pipeline.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.transpiled.test.ts  (0 test)
+ ❯ node_modules/pino/test/browser-is-level-enabled.test.js  (0 test)
+ ❯ node_modules/pino/test/diagnostics.test.js  (0 test)
+ ❯ node_modules/pino/test/sinon-child-logger.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-child.test.js  (0 test)
+ ❯ node_modules/pino/test/metadata.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/bundlers-support.test.js  (0 test)
+ ❯ node_modules/pino/test/hooks.test.js  (0 test)
+ ❯ node_modules/pino/test/escaping.test.js  (0 test)
+ ❯ node_modules/pino/test/pkg/pkg.test.js  (0 test)
+ ❯ node_modules/pino/test/exit.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-disabled.test.js  (0 test)
+ ❯ node_modules/pino/test/broken-pipe.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncTrue.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/big.test.js  (0 test)
+ ❯ node_modules/pino/test/stdout-protection.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin-merge-strategy.test.js  (0 test)
+ ❯ node_modules/pino/test/esm/index.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/caller.test.js  (0 test)
+ ❯ node_modules/pino/test/errorKey.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp-nano.test.js  (0 test)
+ ❯ node_modules/pino/test/complex-objects.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/targets.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/crash.test.js  (0 test)
+ ❯ node_modules/pino/test/transport-stream.test.js  (0 test)
+ ❯ node_modules/pino/test/crlf.test.js  (0 test)
+ ❯ node_modules/pino/test/internals/version.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/repl.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-early-console-freeze.test.js  (0 test)
+ ❯ node_modules/pino/test/jest/basic.spec.js  (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 56 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  node_modules/json-schema-traverse/spec/index.spec.js [ node_modules/json-schema-traverse/spec/index.spec.js ]
+ FAIL  node_modules/pino/test/basic.test.js [ node_modules/pino/test/basic.test.js ]
+ FAIL  node_modules/pino/test/broken-pipe.test.js [ node_modules/pino/test/broken-pipe.test.js ]
+ FAIL  node_modules/pino/test/browser-child.test.js [ node_modules/pino/test/browser-child.test.js ]
+ FAIL  node_modules/pino/test/browser-disabled.test.js [ node_modules/pino/test/browser-disabled.test.js ]
+ FAIL  node_modules/pino/test/browser-early-console-freeze.test.js [ node_modules/pino/test/browser-early-console-freeze.test.js ]
+ FAIL  node_modules/pino/test/browser-is-level-enabled.test.js [ node_modules/pino/test/browser-is-level-enabled.test.js ]
+ FAIL  node_modules/pino/test/browser-levels.test.js [ node_modules/pino/test/browser-levels.test.js ]
+ FAIL  node_modules/pino/test/browser-serializers.test.js [ node_modules/pino/test/browser-serializers.test.js ]
+ FAIL  node_modules/pino/test/browser-timestamp.test.js [ node_modules/pino/test/browser-timestamp.test.js ]
+ FAIL  node_modules/pino/test/browser-transmit.test.js [ node_modules/pino/test/browser-transmit.test.js ]
+ FAIL  node_modules/pino/test/browser.test.js [ node_modules/pino/test/browser.test.js ]
+ FAIL  node_modules/pino/test/complex-objects.test.js [ node_modules/pino/test/complex-objects.test.js ]
+ FAIL  node_modules/pino/test/crlf.test.js [ node_modules/pino/test/crlf.test.js ]
+ FAIL  node_modules/pino/test/custom-levels.test.js [ node_modules/pino/test/custom-levels.test.js ]
+ FAIL  node_modules/pino/test/diagnostics.test.js [ node_modules/pino/test/diagnostics.test.js ]
+ FAIL  node_modules/pino/test/error.test.js [ node_modules/pino/test/error.test.js ]
+ FAIL  node_modules/pino/test/errorKey.test.js [ node_modules/pino/test/errorKey.test.js ]
+ FAIL  node_modules/pino/test/escaping.test.js [ node_modules/pino/test/escaping.test.js ]
+ FAIL  node_modules/pino/test/exit.test.js [ node_modules/pino/test/exit.test.js ]
+ FAIL  node_modules/pino/test/formatters.test.js [ node_modules/pino/test/formatters.test.js ]
+ FAIL  node_modules/pino/test/hooks.test.js [ node_modules/pino/test/hooks.test.js ]
+ FAIL  node_modules/pino/test/http.test.js [ node_modules/pino/test/http.test.js ]
+ FAIL  node_modules/pino/test/is-level-enabled.test.js [ node_modules/pino/test/is-level-enabled.test.js ]
+ FAIL  node_modules/pino/test/levels.test.js [ node_modules/pino/test/levels.test.js ]
+ FAIL  node_modules/pino/test/metadata.test.js [ node_modules/pino/test/metadata.test.js ]
+ FAIL  node_modules/pino/test/mixin-merge-strategy.test.js [ node_modules/pino/test/mixin-merge-strategy.test.js ]
+ FAIL  node_modules/pino/test/mixin.test.js [ node_modules/pino/test/mixin.test.js ]
+ FAIL  node_modules/pino/test/multistream.test.js [ node_modules/pino/test/multistream.test.js ]
+ FAIL  node_modules/pino/test/redact.test.js [ node_modules/pino/test/redact.test.js ]
+ FAIL  node_modules/pino/test/serializers.test.js [ node_modules/pino/test/serializers.test.js ]
+ FAIL  node_modules/pino/test/sinon-child-logger.test.js [ node_modules/pino/test/sinon-child-logger.test.js ]
+ FAIL  node_modules/pino/test/stdout-protection.test.js [ node_modules/pino/test/stdout-protection.test.js ]
+ FAIL  node_modules/pino/test/syncfalse.test.js [ node_modules/pino/test/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/timestamp-nano.test.js [ node_modules/pino/test/timestamp-nano.test.js ]
+ FAIL  node_modules/pino/test/timestamp.test.js [ node_modules/pino/test/timestamp.test.js ]
+ FAIL  node_modules/pino/test/transport-stream.test.js [ node_modules/pino/test/transport-stream.test.js ]
+ FAIL  node_modules/pino/test/esm/index.test.js [ node_modules/pino/test/esm/index.test.js ]
+ FAIL  node_modules/pino/test/internals/version.test.js [ node_modules/pino/test/internals/version.test.js ]
+ FAIL  node_modules/pino/test/jest/basic.spec.js [ node_modules/pino/test/jest/basic.spec.js ]
+ FAIL  node_modules/pino/test/pkg/pkg.test.js [ node_modules/pino/test/pkg/pkg.test.js ]
+ FAIL  node_modules/pino/test/transport/big.test.js [ node_modules/pino/test/transport/big.test.js ]
+ FAIL  node_modules/pino/test/transport/bundlers-support.test.js [ node_modules/pino/test/transport/bundlers-support.test.js ]
+ FAIL  node_modules/pino/test/transport/caller.test.js [ node_modules/pino/test/transport/caller.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.js [ node_modules/pino/test/transport/core.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.ts [ node_modules/pino/test/transport/core.test.ts ]
+ FAIL  node_modules/pino/test/transport/core.transpiled.test.ts [ node_modules/pino/test/transport/core.transpiled.test.ts ]
+ FAIL  node_modules/pino/test/transport/crash.test.js [ node_modules/pino/test/transport/crash.test.js ]
+ FAIL  node_modules/pino/test/transport/module-link.test.js [ node_modules/pino/test/transport/module-link.test.js ]
+ FAIL  node_modules/pino/test/transport/pipeline.test.js [ node_modules/pino/test/transport/pipeline.test.js ]
+ FAIL  node_modules/pino/test/transport/repl.test.js [ node_modules/pino/test/transport/repl.test.js ]
+ FAIL  node_modules/pino/test/transport/syncTrue.test.js [ node_modules/pino/test/transport/syncTrue.test.js ]
+ FAIL  node_modules/pino/test/transport/syncfalse.test.js [ node_modules/pino/test/transport/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/transport/targets.test.js [ node_modules/pino/test/transport/targets.test.js ]
+ FAIL  node_modules/pino/test/transport/uses-pino-config.test.js [ node_modules/pino/test/transport/uses-pino-config.test.js ]
+ FAIL  node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts [ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts ]
+Error: Failed to load url /home/user/Influence/apps/server/src/setupTests.ts (resolved id: /home/user/Influence/apps/server/src/setupTests.ts). Does the file exist?
+ ❯ loadAndTransform ../../node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/56]⎯
+
+ Test Files  56 failed (56)
+      Tests  no tests
+   Start at  14:56:43
+   Duration  25.90s (transform 172ms, setup 0ms, collect 0ms, tests 0ms, environment 29ms, prepare 10.53s)
+
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit
+[3Jc
+ RERUN  package.json
+
+ ❯ node_modules/pino/test/redact.test.js  (0 test)
+ ❯ node_modules/pino/test/basic.test.js  (0 test)
+ ❯ node_modules/pino/test/levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.js  (0 test)
+ ❯ node_modules/pino/test/browser.test.js  (0 test)
+ ❯ node_modules/pino/test/multistream.test.js  (0 test)
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts  (0 test)
+ ❯ node_modules/pino/test/browser-transmit.test.js  (0 test)
+ ❯ node_modules/pino/test/error.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/formatters.test.js  (0 test)
+ ❯ node_modules/pino/test/serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.ts  (0 test)
+ ❯ node_modules/pino/test/http.test.js  (0 test)
+ ❯ node_modules/pino/test/is-level-enabled.test.js  (0 test)
+ ❯ node_modules/json-schema-traverse/spec/index.spec.js  (0 test)
+ ❯ node_modules/pino/test/custom-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/module-link.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/uses-pino-config.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/pipeline.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.transpiled.test.ts  (0 test)
+ ❯ node_modules/pino/test/browser-is-level-enabled.test.js  (0 test)
+ ❯ node_modules/pino/test/diagnostics.test.js  (0 test)
+ ❯ node_modules/pino/test/sinon-child-logger.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-child.test.js  (0 test)
+ ❯ node_modules/pino/test/metadata.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/bundlers-support.test.js  (0 test)
+ ❯ node_modules/pino/test/hooks.test.js  (0 test)
+ ❯ node_modules/pino/test/escaping.test.js  (0 test)
+ ❯ node_modules/pino/test/pkg/pkg.test.js  (0 test)
+ ❯ node_modules/pino/test/exit.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-disabled.test.js  (0 test)
+ ❯ node_modules/pino/test/broken-pipe.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncTrue.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/big.test.js  (0 test)
+ ❯ node_modules/pino/test/stdout-protection.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin-merge-strategy.test.js  (0 test)
+ ❯ node_modules/pino/test/esm/index.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/caller.test.js  (0 test)
+ ❯ node_modules/pino/test/errorKey.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp-nano.test.js  (0 test)
+ ❯ node_modules/pino/test/complex-objects.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/targets.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/crash.test.js  (0 test)
+ ❯ node_modules/pino/test/transport-stream.test.js  (0 test)
+ ❯ node_modules/pino/test/crlf.test.js  (0 test)
+ ❯ node_modules/pino/test/internals/version.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/repl.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-early-console-freeze.test.js  (0 test)
+ ❯ node_modules/pino/test/jest/basic.spec.js  (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 56 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  node_modules/pino/test/redact.test.js [ node_modules/pino/test/redact.test.js ]
+ FAIL  node_modules/pino/test/basic.test.js [ node_modules/pino/test/basic.test.js ]
+ FAIL  node_modules/pino/test/levels.test.js [ node_modules/pino/test/levels.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.js [ node_modules/pino/test/transport/core.test.js ]
+ FAIL  node_modules/pino/test/browser.test.js [ node_modules/pino/test/browser.test.js ]
+ FAIL  node_modules/pino/test/multistream.test.js [ node_modules/pino/test/multistream.test.js ]
+ FAIL  node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts [ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts ]
+ FAIL  node_modules/pino/test/browser-transmit.test.js [ node_modules/pino/test/browser-transmit.test.js ]
+ FAIL  node_modules/pino/test/error.test.js [ node_modules/pino/test/error.test.js ]
+ FAIL  node_modules/pino/test/browser-serializers.test.js [ node_modules/pino/test/browser-serializers.test.js ]
+ FAIL  node_modules/pino/test/formatters.test.js [ node_modules/pino/test/formatters.test.js ]
+ FAIL  node_modules/pino/test/serializers.test.js [ node_modules/pino/test/serializers.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.ts [ node_modules/pino/test/transport/core.test.ts ]
+ FAIL  node_modules/pino/test/http.test.js [ node_modules/pino/test/http.test.js ]
+ FAIL  node_modules/pino/test/is-level-enabled.test.js [ node_modules/pino/test/is-level-enabled.test.js ]
+ FAIL  node_modules/json-schema-traverse/spec/index.spec.js [ node_modules/json-schema-traverse/spec/index.spec.js ]
+ FAIL  node_modules/pino/test/custom-levels.test.js [ node_modules/pino/test/custom-levels.test.js ]
+ FAIL  node_modules/pino/test/transport/module-link.test.js [ node_modules/pino/test/transport/module-link.test.js ]
+ FAIL  node_modules/pino/test/mixin.test.js [ node_modules/pino/test/mixin.test.js ]
+ FAIL  node_modules/pino/test/browser-levels.test.js [ node_modules/pino/test/browser-levels.test.js ]
+ FAIL  node_modules/pino/test/syncfalse.test.js [ node_modules/pino/test/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/timestamp.test.js [ node_modules/pino/test/timestamp.test.js ]
+ FAIL  node_modules/pino/test/transport/uses-pino-config.test.js [ node_modules/pino/test/transport/uses-pino-config.test.js ]
+ FAIL  node_modules/pino/test/transport/pipeline.test.js [ node_modules/pino/test/transport/pipeline.test.js ]
+ FAIL  node_modules/pino/test/transport/core.transpiled.test.ts [ node_modules/pino/test/transport/core.transpiled.test.ts ]
+ FAIL  node_modules/pino/test/browser-is-level-enabled.test.js [ node_modules/pino/test/browser-is-level-enabled.test.js ]
+ FAIL  node_modules/pino/test/diagnostics.test.js [ node_modules/pino/test/diagnostics.test.js ]
+ FAIL  node_modules/pino/test/sinon-child-logger.test.js [ node_modules/pino/test/sinon-child-logger.test.js ]
+ FAIL  node_modules/pino/test/browser-child.test.js [ node_modules/pino/test/browser-child.test.js ]
+ FAIL  node_modules/pino/test/metadata.test.js [ node_modules/pino/test/metadata.test.js ]
+ FAIL  node_modules/pino/test/transport/bundlers-support.test.js [ node_modules/pino/test/transport/bundlers-support.test.js ]
+ FAIL  node_modules/pino/test/hooks.test.js [ node_modules/pino/test/hooks.test.js ]
+ FAIL  node_modules/pino/test/escaping.test.js [ node_modules/pino/test/escaping.test.js ]
+ FAIL  node_modules/pino/test/pkg/pkg.test.js [ node_modules/pino/test/pkg/pkg.test.js ]
+ FAIL  node_modules/pino/test/exit.test.js [ node_modules/pino/test/exit.test.js ]
+ FAIL  node_modules/pino/test/transport/syncfalse.test.js [ node_modules/pino/test/transport/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/browser-timestamp.test.js [ node_modules/pino/test/browser-timestamp.test.js ]
+ FAIL  node_modules/pino/test/browser-disabled.test.js [ node_modules/pino/test/browser-disabled.test.js ]
+ FAIL  node_modules/pino/test/broken-pipe.test.js [ node_modules/pino/test/broken-pipe.test.js ]
+ FAIL  node_modules/pino/test/transport/syncTrue.test.js [ node_modules/pino/test/transport/syncTrue.test.js ]
+ FAIL  node_modules/pino/test/transport/big.test.js [ node_modules/pino/test/transport/big.test.js ]
+ FAIL  node_modules/pino/test/stdout-protection.test.js [ node_modules/pino/test/stdout-protection.test.js ]
+ FAIL  node_modules/pino/test/mixin-merge-strategy.test.js [ node_modules/pino/test/mixin-merge-strategy.test.js ]
+ FAIL  node_modules/pino/test/esm/index.test.js [ node_modules/pino/test/esm/index.test.js ]
+ FAIL  node_modules/pino/test/transport/caller.test.js [ node_modules/pino/test/transport/caller.test.js ]
+ FAIL  node_modules/pino/test/errorKey.test.js [ node_modules/pino/test/errorKey.test.js ]
+ FAIL  node_modules/pino/test/timestamp-nano.test.js [ node_modules/pino/test/timestamp-nano.test.js ]
+ FAIL  node_modules/pino/test/complex-objects.test.js [ node_modules/pino/test/complex-objects.test.js ]
+ FAIL  node_modules/pino/test/transport/targets.test.js [ node_modules/pino/test/transport/targets.test.js ]
+ FAIL  node_modules/pino/test/transport/crash.test.js [ node_modules/pino/test/transport/crash.test.js ]
+ FAIL  node_modules/pino/test/transport-stream.test.js [ node_modules/pino/test/transport-stream.test.js ]
+ FAIL  node_modules/pino/test/crlf.test.js [ node_modules/pino/test/crlf.test.js ]
+ FAIL  node_modules/pino/test/internals/version.test.js [ node_modules/pino/test/internals/version.test.js ]
+ FAIL  node_modules/pino/test/transport/repl.test.js [ node_modules/pino/test/transport/repl.test.js ]
+ FAIL  node_modules/pino/test/browser-early-console-freeze.test.js [ node_modules/pino/test/browser-early-console-freeze.test.js ]
+ FAIL  node_modules/pino/test/jest/basic.spec.js [ node_modules/pino/test/jest/basic.spec.js ]
+Error: Failed to load url /home/user/Influence/apps/server/src/setupTests.ts (resolved id: /home/user/Influence/apps/server/src/setupTests.ts). Does the file exist?
+ Test Files  56 failed (56)
+ ❯ loadAndTransform ../../node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+      Tests  no tests
+   Start at  14:59:31
+   Duration  0ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/56]⎯
+
+
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit
+[3Jc
+ RERUN  package.json
+
+ ❯ node_modules/pino/test/redact.test.js  (0 test)
+ ❯ node_modules/pino/test/basic.test.js  (0 test)
+ ❯ node_modules/pino/test/levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.js  (0 test)
+ ❯ node_modules/pino/test/browser.test.js  (0 test)
+ ❯ node_modules/pino/test/multistream.test.js  (0 test)
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts  (0 test)
+ ❯ node_modules/pino/test/browser-transmit.test.js  (0 test)
+ ❯ node_modules/pino/test/error.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/formatters.test.js  (0 test)
+ ❯ node_modules/pino/test/serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.ts  (0 test)
+ ❯ node_modules/pino/test/http.test.js  (0 test)
+ ❯ node_modules/pino/test/is-level-enabled.test.js  (0 test)
+ ❯ node_modules/json-schema-traverse/spec/index.spec.js  (0 test)
+ ❯ node_modules/pino/test/custom-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/module-link.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/uses-pino-config.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/pipeline.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.transpiled.test.ts  (0 test)
+ ❯ node_modules/pino/test/browser-is-level-enabled.test.js  (0 test)
+ ❯ node_modules/pino/test/diagnostics.test.js  (0 test)
+ ❯ node_modules/pino/test/sinon-child-logger.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-child.test.js  (0 test)
+ ❯ node_modules/pino/test/metadata.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/bundlers-support.test.js  (0 test)
+ ❯ node_modules/pino/test/hooks.test.js  (0 test)
+ ❯ node_modules/pino/test/escaping.test.js  (0 test)
+ ❯ node_modules/pino/test/pkg/pkg.test.js  (0 test)
+ ❯ node_modules/pino/test/exit.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-disabled.test.js  (0 test)
+ ❯ node_modules/pino/test/broken-pipe.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncTrue.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/big.test.js  (0 test)
+ ❯ node_modules/pino/test/stdout-protection.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin-merge-strategy.test.js  (0 test)
+ ❯ node_modules/pino/test/esm/index.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/caller.test.js  (0 test)
+ ❯ node_modules/pino/test/errorKey.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp-nano.test.js  (0 test)
+ ❯ node_modules/pino/test/complex-objects.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/targets.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/crash.test.js  (0 test)
+ ❯ node_modules/pino/test/transport-stream.test.js  (0 test)
+ ❯ node_modules/pino/test/crlf.test.js  (0 test)
+ ❯ node_modules/pino/test/internals/version.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/repl.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-early-console-freeze.test.js  (0 test)
+ ❯ node_modules/pino/test/jest/basic.spec.js  (0 test)
+⎯⎯⎯⎯⎯⎯ Failed Suites 56 ⎯⎯⎯⎯⎯⎯
+
+
+ FAIL  node_modules/pino/test/redact.test.js [ node_modules/pino/test/redact.test.js ]
+ FAIL  node_modules/pino/test/basic.test.js [ node_modules/pino/test/basic.test.js ]
+ FAIL  node_modules/pino/test/levels.test.js [ node_modules/pino/test/levels.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.js [ node_modules/pino/test/transport/core.test.js ]
+ FAIL  node_modules/pino/test/browser.test.js [ node_modules/pino/test/browser.test.js ]
+ FAIL  node_modules/pino/test/multistream.test.js [ node_modules/pino/test/multistream.test.js ]
+ FAIL  node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts [ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts ]
+ FAIL  node_modules/pino/test/browser-transmit.test.js [ node_modules/pino/test/browser-transmit.test.js ]
+ FAIL  node_modules/pino/test/error.test.js [ node_modules/pino/test/error.test.js ]
+ FAIL  node_modules/pino/test/browser-serializers.test.js [ node_modules/pino/test/browser-serializers.test.js ]
+ FAIL  node_modules/pino/test/formatters.test.js [ node_modules/pino/test/formatters.test.js ]
+ FAIL  node_modules/pino/test/serializers.test.js [ node_modules/pino/test/serializers.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.ts [ node_modules/pino/test/transport/core.test.ts ]
+ FAIL  node_modules/pino/test/http.test.js [ node_modules/pino/test/http.test.js ]
+ FAIL  node_modules/pino/test/is-level-enabled.test.js [ node_modules/pino/test/is-level-enabled.test.js ]
+ FAIL  node_modules/json-schema-traverse/spec/index.spec.js [ node_modules/json-schema-traverse/spec/index.spec.js ]
+ FAIL  node_modules/pino/test/custom-levels.test.js [ node_modules/pino/test/custom-levels.test.js ]
+ FAIL  node_modules/pino/test/transport/module-link.test.js [ node_modules/pino/test/transport/module-link.test.js ]
+ FAIL  node_modules/pino/test/mixin.test.js [ node_modules/pino/test/mixin.test.js ]
+ FAIL  node_modules/pino/test/browser-levels.test.js [ node_modules/pino/test/browser-levels.test.js ]
+ FAIL  node_modules/pino/test/syncfalse.test.js [ node_modules/pino/test/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/timestamp.test.js [ node_modules/pino/test/timestamp.test.js ]
+ FAIL  node_modules/pino/test/transport/uses-pino-config.test.js [ node_modules/pino/test/transport/uses-pino-config.test.js ]
+ FAIL  node_modules/pino/test/transport/pipeline.test.js [ node_modules/pino/test/transport/pipeline.test.js ]
+ FAIL  node_modules/pino/test/transport/core.transpiled.test.ts [ node_modules/pino/test/transport/core.transpiled.test.ts ]
+ FAIL  node_modules/pino/test/browser-is-level-enabled.test.js [ node_modules/pino/test/browser-is-level-enabled.test.js ]
+ FAIL  node_modules/pino/test/diagnostics.test.js [ node_modules/pino/test/diagnostics.test.js ]
+ FAIL  node_modules/pino/test/sinon-child-logger.test.js [ node_modules/pino/test/sinon-child-logger.test.js ]
+ FAIL  node_modules/pino/test/browser-child.test.js [ node_modules/pino/test/browser-child.test.js ]
+ FAIL  node_modules/pino/test/metadata.test.js [ node_modules/pino/test/metadata.test.js ]
+ FAIL  node_modules/pino/test/transport/bundlers-support.test.js [ node_modules/pino/test/transport/bundlers-support.test.js ]
+ FAIL  node_modules/pino/test/hooks.test.js [ node_modules/pino/test/hooks.test.js ]
+ FAIL  node_modules/pino/test/escaping.test.js [ node_modules/pino/test/escaping.test.js ]
+ FAIL  node_modules/pino/test/pkg/pkg.test.js [ node_modules/pino/test/pkg/pkg.test.js ]
+ FAIL  node_modules/pino/test/exit.test.js [ node_modules/pino/test/exit.test.js ]
+ FAIL  node_modules/pino/test/transport/syncfalse.test.js [ node_modules/pino/test/transport/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/browser-timestamp.test.js [ node_modules/pino/test/browser-timestamp.test.js ]
+ FAIL  node_modules/pino/test/browser-disabled.test.js [ node_modules/pino/test/browser-disabled.test.js ]
+ FAIL  node_modules/pino/test/broken-pipe.test.js [ node_modules/pino/test/broken-pipe.test.js ]
+ FAIL  node_modules/pino/test/transport/syncTrue.test.js [ node_modules/pino/test/transport/syncTrue.test.js ]
+ FAIL  node_modules/pino/test/transport/big.test.js [ node_modules/pino/test/transport/big.test.js ]
+ FAIL  node_modules/pino/test/stdout-protection.test.js [ node_modules/pino/test/stdout-protection.test.js ]
+ FAIL  node_modules/pino/test/mixin-merge-strategy.test.js [ node_modules/pino/test/mixin-merge-strategy.test.js ]
+ FAIL  node_modules/pino/test/esm/index.test.js [ node_modules/pino/test/esm/index.test.js ]
+ FAIL  node_modules/pino/test/transport/caller.test.js [ node_modules/pino/test/transport/caller.test.js ]
+ FAIL  node_modules/pino/test/errorKey.test.js [ node_modules/pino/test/errorKey.test.js ]
+ FAIL  node_modules/pino/test/timestamp-nano.test.js [ node_modules/pino/test/timestamp-nano.test.js ]
+ FAIL  node_modules/pino/test/complex-objects.test.js [ node_modules/pino/test/complex-objects.test.js ]
+ FAIL  node_modules/pino/test/transport/targets.test.js [ node_modules/pino/test/transport/targets.test.js ]
+ FAIL  node_modules/pino/test/transport/crash.test.js [ node_modules/pino/test/transport/crash.test.js ]
+ FAIL  node_modules/pino/test/transport-stream.test.js [ node_modules/pino/test/transport-stream.test.js ]
+ FAIL  node_modules/pino/test/crlf.test.js [ node_modules/pino/test/crlf.test.js ]
+ FAIL  node_modules/pino/test/internals/version.test.js [ node_modules/pino/test/internals/version.test.js ]
+ FAIL  node_modules/pino/test/transport/repl.test.js [ node_modules/pino/test/transport/repl.test.js ]
+ FAIL  node_modules/pino/test/browser-early-console-freeze.test.js [ node_modules/pino/test/browser-early-console-freeze.test.js ]
+ FAIL  node_modules/pino/test/jest/basic.spec.js [ node_modules/pino/test/jest/basic.spec.js ]
+Error: Failed to load url /home/user/Influence/apps/server/src/setupTests.ts (resolved id: /home/user/Influence/apps/server/src/setupTests.ts). Does the file exist?
+ ❯ loadAndTransform ../../node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/56]⎯
+
+ Test Files  56 failed (56)
+      Tests  no tests
+   Start at  15:03:56
+   Duration  0ms
+
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit
+[3Jc
+ RERUN  ../../package.json
+
+ ❯ node_modules/pino/test/redact.test.js  (0 test)
+ ❯ node_modules/pino/test/basic.test.js  (0 test)
+ ❯ node_modules/pino/test/levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.js  (0 test)
+ ❯ node_modules/pino/test/browser.test.js  (0 test)
+ ❯ node_modules/pino/test/multistream.test.js  (0 test)
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts  (0 test)
+ ❯ node_modules/pino/test/browser-transmit.test.js  (0 test)
+ ❯ node_modules/pino/test/error.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/formatters.test.js  (0 test)
+ ❯ node_modules/pino/test/serializers.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.ts  (0 test)
+ ❯ node_modules/pino/test/http.test.js  (0 test)
+ ❯ node_modules/pino/test/is-level-enabled.test.js  (0 test)
+ ❯ node_modules/json-schema-traverse/spec/index.spec.js  (0 test)
+ ❯ node_modules/pino/test/custom-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/module-link.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-levels.test.js  (0 test)
+ ❯ node_modules/pino/test/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/uses-pino-config.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/pipeline.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.transpiled.test.ts  (0 test)
+ ❯ node_modules/pino/test/browser-is-level-enabled.test.js  (0 test)
+ ❯ node_modules/pino/test/diagnostics.test.js  (0 test)
+ ❯ node_modules/pino/test/sinon-child-logger.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-child.test.js  (0 test)
+ ❯ node_modules/pino/test/metadata.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/bundlers-support.test.js  (0 test)
+ ❯ node_modules/pino/test/hooks.test.js  (0 test)
+ ❯ node_modules/pino/test/escaping.test.js  (0 test)
+ ❯ node_modules/pino/test/pkg/pkg.test.js  (0 test)
+ ❯ node_modules/pino/test/exit.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncfalse.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-timestamp.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-disabled.test.js  (0 test)
+ ❯ node_modules/pino/test/broken-pipe.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/syncTrue.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/big.test.js  (0 test)
+ ❯ node_modules/pino/test/stdout-protection.test.js  (0 test)
+ ❯ node_modules/pino/test/mixin-merge-strategy.test.js  (0 test)
+ ❯ node_modules/pino/test/esm/index.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/caller.test.js  (0 test)
+ ❯ node_modules/pino/test/errorKey.test.js  (0 test)
+ ❯ node_modules/pino/test/timestamp-nano.test.js  (0 test)
+ ❯ node_modules/pino/test/complex-objects.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/targets.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/crash.test.js  (0 test)
+ ❯ node_modules/pino/test/transport-stream.test.js  (0 test)
+ ❯ node_modules/pino/test/crlf.test.js  (0 test)
+ ❯ node_modules/pino/test/internals/version.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/repl.test.js  (0 test)
+ ❯ node_modules/pino/test/browser-early-console-freeze.test.js  (0 test)
+ ❯ node_modules/pino/test/jest/basic.spec.js  (0 test)
+⎯⎯⎯⎯⎯⎯ Failed Suites 56 ⎯⎯⎯⎯⎯⎯
+
+
+ FAIL  node_modules/pino/test/redact.test.js [ node_modules/pino/test/redact.test.js ]
+ FAIL  node_modules/pino/test/basic.test.js [ node_modules/pino/test/basic.test.js ]
+ FAIL  node_modules/pino/test/levels.test.js [ node_modules/pino/test/levels.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.js [ node_modules/pino/test/transport/core.test.js ]
+ FAIL  node_modules/pino/test/browser.test.js [ node_modules/pino/test/browser.test.js ]
+ FAIL  node_modules/pino/test/multistream.test.js [ node_modules/pino/test/multistream.test.js ]
+ FAIL  node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts [ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts ]
+ FAIL  node_modules/pino/test/browser-transmit.test.js [ node_modules/pino/test/browser-transmit.test.js ]
+ FAIL  node_modules/pino/test/error.test.js [ node_modules/pino/test/error.test.js ]
+ FAIL  node_modules/pino/test/browser-serializers.test.js [ node_modules/pino/test/browser-serializers.test.js ]
+ FAIL  node_modules/pino/test/formatters.test.js [ node_modules/pino/test/formatters.test.js ]
+ FAIL  node_modules/pino/test/serializers.test.js [ node_modules/pino/test/serializers.test.js ]
+ FAIL  node_modules/pino/test/transport/core.test.ts [ node_modules/pino/test/transport/core.test.ts ]
+ FAIL  node_modules/pino/test/http.test.js [ node_modules/pino/test/http.test.js ]
+ FAIL  node_modules/pino/test/is-level-enabled.test.js [ node_modules/pino/test/is-level-enabled.test.js ]
+ FAIL  node_modules/json-schema-traverse/spec/index.spec.js [ node_modules/json-schema-traverse/spec/index.spec.js ]
+ FAIL  node_modules/pino/test/custom-levels.test.js [ node_modules/pino/test/custom-levels.test.js ]
+ FAIL  node_modules/pino/test/transport/module-link.test.js [ node_modules/pino/test/transport/module-link.test.js ]
+ FAIL  node_modules/pino/test/mixin.test.js [ node_modules/pino/test/mixin.test.js ]
+ FAIL  node_modules/pino/test/browser-levels.test.js [ node_modules/pino/test/browser-levels.test.js ]
+ FAIL  node_modules/pino/test/syncfalse.test.js [ node_modules/pino/test/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/timestamp.test.js [ node_modules/pino/test/timestamp.test.js ]
+ FAIL  node_modules/pino/test/transport/uses-pino-config.test.js [ node_modules/pino/test/transport/uses-pino-config.test.js ]
+ FAIL  node_modules/pino/test/transport/pipeline.test.js [ node_modules/pino/test/transport/pipeline.test.js ]
+ FAIL  node_modules/pino/test/transport/core.transpiled.test.ts [ node_modules/pino/test/transport/core.transpiled.test.ts ]
+ FAIL  node_modules/pino/test/browser-is-level-enabled.test.js [ node_modules/pino/test/browser-is-level-enabled.test.js ]
+ FAIL  node_modules/pino/test/diagnostics.test.js [ node_modules/pino/test/diagnostics.test.js ]
+ FAIL  node_modules/pino/test/sinon-child-logger.test.js [ node_modules/pino/test/sinon-child-logger.test.js ]
+ FAIL  node_modules/pino/test/browser-child.test.js [ node_modules/pino/test/browser-child.test.js ]
+ FAIL  node_modules/pino/test/metadata.test.js [ node_modules/pino/test/metadata.test.js ]
+ FAIL  node_modules/pino/test/transport/bundlers-support.test.js [ node_modules/pino/test/transport/bundlers-support.test.js ]
+ FAIL  node_modules/pino/test/hooks.test.js [ node_modules/pino/test/hooks.test.js ]
+ FAIL  node_modules/pino/test/escaping.test.js [ node_modules/pino/test/escaping.test.js ]
+ FAIL  node_modules/pino/test/pkg/pkg.test.js [ node_modules/pino/test/pkg/pkg.test.js ]
+ FAIL  node_modules/pino/test/exit.test.js [ node_modules/pino/test/exit.test.js ]
+ FAIL  node_modules/pino/test/transport/syncfalse.test.js [ node_modules/pino/test/transport/syncfalse.test.js ]
+ FAIL  node_modules/pino/test/browser-timestamp.test.js [ node_modules/pino/test/browser-timestamp.test.js ]
+ FAIL  node_modules/pino/test/browser-disabled.test.js [ node_modules/pino/test/browser-disabled.test.js ]
+ FAIL  node_modules/pino/test/broken-pipe.test.js [ node_modules/pino/test/broken-pipe.test.js ]
+ Test Files  56 failed (56)
+      Tests  no tests
+   Start at  15:29:52
+   Duration  0ms
+
+ FAIL  node_modules/pino/test/transport/syncTrue.test.js [ node_modules/pino/test/transport/syncTrue.test.js ]
+ FAIL  node_modules/pino/test/transport/big.test.js [ node_modules/pino/test/transport/big.test.js ]
+ FAIL  node_modules/pino/test/stdout-protection.test.js [ node_modules/pino/test/stdout-protection.test.js ]
+ FAIL  node_modules/pino/test/mixin-merge-strategy.test.js [ node_modules/pino/test/mixin-merge-strategy.test.js ]
+ FAIL  node_modules/pino/test/esm/index.test.js [ node_modules/pino/test/esm/index.test.js ]
+ FAIL  node_modules/pino/test/transport/caller.test.js [ node_modules/pino/test/transport/caller.test.js ]
+ FAIL  node_modules/pino/test/errorKey.test.js [ node_modules/pino/test/errorKey.test.js ]
+ FAIL  node_modules/pino/test/timestamp-nano.test.js [ node_modules/pino/test/timestamp-nano.test.js ]
+ FAIL  node_modules/pino/test/complex-objects.test.js [ node_modules/pino/test/complex-objects.test.js ]
+ FAIL  node_modules/pino/test/transport/targets.test.js [ node_modules/pino/test/transport/targets.test.js ]
+ FAIL  node_modules/pino/test/transport/crash.test.js [ node_modules/pino/test/transport/crash.test.js ]
+ FAIL  node_modules/pino/test/transport-stream.test.js [ node_modules/pino/test/transport-stream.test.js ]
+ FAIL  node_modules/pino/test/crlf.test.js [ node_modules/pino/test/crlf.test.js ]
+ FAIL  node_modules/pino/test/internals/version.test.js [ node_modules/pino/test/internals/version.test.js ]
+ FAIL  node_modules/pino/test/transport/repl.test.js [ node_modules/pino/test/transport/repl.test.js ]
+ FAIL  node_modules/pino/test/browser-early-console-freeze.test.js [ node_modules/pino/test/browser-early-console-freeze.test.js ]
+ FAIL  node_modules/pino/test/jest/basic.spec.js [ node_modules/pino/test/jest/basic.spec.js ]
+Error: Failed to load url /home/user/Influence/apps/server/src/setupTests.ts (resolved id: /home/user/Influence/apps/server/src/setupTests.ts). Does the file exist?
+ ❯ loadAndTransform ../../node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51969:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/56]⎯
+
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit
+[3Jc
+ RERUN  package.json
+
+ ❯ node_modules/pino/test/redact.test.js  (0 test)
+ ❯ node_modules/pino/test/basic.test.js  (0 test)
+ ❯ node_modules/pino/test/levels.test.js  (0 test)
+ ❯ node_modules/pino/test/transport/core.test.js  (0 test)
+ ❯ node_modules/pino/test/browser.test.js  (0 test)

@@ -1,0 +1,35 @@
+
+> @influence/desktop@1.0.0 build
+> electron-vite build
+
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 1 modules transformed.
+rendering chunks...
+out/main/main.js  4.14 kB
+✓ built in 1.85s
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 1 modules transformed.
+rendering chunks...
+out/preload/preload.js  1.20 kB
+✓ built in 166ms
+vite v5.4.21 building for production...
+transforming...
+
+warn - The `content` option in your Tailwind CSS configuration is missing or empty.
+warn - Configure your content sources or your generated CSS will be missing styles.
+warn - https://tailwindcss.com/docs/content-configuration
+../web/src/services/suggestAccounts.ts (1:9): "NetworkName" is not exported by "../web/src/store/useAppState.tsx", imported by "../web/src/services/suggestAccounts.ts".
+../web/src/views/_dataMock.ts (1:9): "NetworkName" is not exported by "../web/src/store/useAppState.tsx", imported by "../web/src/views/_dataMock.ts".
+../web/src/services/analytics.ts (1:9): "NetworkName" is not exported by "../web/src/store/useAppState.tsx", imported by "../web/src/services/analytics.ts".
+../web/src/views/Dashboard.tsx (14:22): "LocaleKey" is not exported by "../web/src/i18n.tsx", imported by "../web/src/views/Dashboard.tsx".
+../web/src/views/Dashboard.tsx (16:27): "MockPost" is not exported by "../web/src/views/_dataMock.ts", imported by "../web/src/views/Dashboard.tsx".
+../web/src/views/Dashboard.tsx (18:9): "NetworkName" is not exported by "../web/src/store/useAppState.tsx", imported by "../web/src/views/Dashboard.tsx".
+../web/src/ui/App.tsx (11:9): "NetworkName" is not exported by "../web/src/store/useAppState.tsx", imported by "../web/src/ui/App.tsx".
+✓ 980 modules transformed.
+rendering chunks...
+../desktop/out/renderer/index.html                     0.40 kB
+../desktop/out/renderer/assets/index-D-bi_fOv.css     10.56 kB
+../desktop/out/renderer/assets/index-BF6VA0L7.js   1,212.00 kB
+✓ built in 44.06s

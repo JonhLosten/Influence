@@ -6,8 +6,10 @@ import React, { createContext, useContext } from "react";
 interface PreferencesState {
   darkMode: boolean;
   hasCompletedOnboarding: boolean;
+  showDemoData: boolean;
   toggleDarkMode: () => void;
   completeOnboarding: () => void;
+  toggleShowDemoData: () => void;
 }
 
 export const usePreferences = create<PreferencesState>()(
@@ -15,8 +17,11 @@ export const usePreferences = create<PreferencesState>()(
     (set) => ({
       darkMode: window.matchMedia("(prefers-color-scheme: dark)").matches, // Default to system preference
       hasCompletedOnboarding: false,
+      showDemoData: true,
       toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
       completeOnboarding: () => set(() => ({ hasCompletedOnboarding: true })),
+      toggleShowDemoData: () =>
+        set((state) => ({ showDemoData: !state.showDemoData })),
     }),
     {
       name: "influence-preferences-storage", // unique name

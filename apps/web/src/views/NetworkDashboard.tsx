@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -9,16 +9,16 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { getDashboardData, PeriodDays, MockPost } from "./_dataMock";
-import {
-  useAppState,
-  NetworkName,
-  getAccountsByNetwork,
-} from "../store/useAppState";
+import { getDashboardData } from "./_dataMock";
+import type { PeriodDays, MockPost } from "./_dataMock";
+import { useAppState, getAccountsByNetwork } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 import { SocialIcon } from "../components/SocialIcon";
-import { fetchNetworkSnapshot } from "../services/analytics";
+import { fetchNetworkSnapshot, searchYouTubeChannels } from "../lib/api";
 import { usePreferences } from "../store/usePreferences";
-import { useLanguage, LocaleKey } from "../i18n";
+import { useLanguage } from "../i18n";
+import type { LocaleKey } from "../i18n";
+import { Button } from "../components/button";
 
 export type NetworkSnapshot = Awaited<ReturnType<typeof fetchNetworkSnapshot>>;
 
@@ -41,34 +41,42 @@ const colorMap: Record<NetworkName, string> = {
 type DashboardData = ReturnType<typeof getDashboardData>;
 
 const toNavKey = (network: NetworkName): LocaleKey =>
-  (`nav.${network}` as unknown) as LocaleKey;
+  `nav.${network}` as LocaleKey;
 
 export function NetworkDashboard({ network }: { network: NetworkName }) {
-  const { prefs } = usePreferences();
+  const { showDemoData } = usePreferences();
   const { t } = useLanguage();
-  const [period, setPeriod] = React.useState<Period>("7d");
-  const [data, setData] = React.useState<DashboardData | null>(() =>
-    prefs.showDemoData ? getDashboardData(periodToDays["7d"], network) : null
+  const [period, setPeriod] = useState<Period>("7d");
+  const [data, setData] = useState<DashboardData | null>(() =>
+    showDemoData ? getDashboardData(periodToDays["7d"], network) : null
   );
-  const [snapshot, setSnapshot] = React.useState<NetworkSnapshot | null>(null);
-  const [loadingSnapshot, setLoadingSnapshot] = React.useState(false);
-  const [snapshotError, setSnapshotError] = React.useState<"api" | null>(null);
+  const [snapshot, setSnapshot] = useState<NetworkSnapshot | null>(null);
+  const [loadingSnapshot, setLoadingSnapshot] = useState(false);
+  const [snapshotError, setSnapshotError] = useState<"api" | null>(null);
+
+  // State for YouTube Channel Search
+  const [youtubeSearchQuery, setYoutubeSearchQuery] = useState<string>("");
+  const [youtubeSearchResults, setYoutubeSearchResults] = useState<any[]>([]);
+  const [loadingYoutubeSearch, setLoadingYoutubeSearch] = useState(false);
+  const [youtubeSearchError, setYoutubeSearchError] = useState<string | null>(
+    null
+  );
 
   const {
     state: { accounts },
   } = useAppState();
   const accountsOfNetwork = getAccountsByNetwork(accounts, network);
 
-  React.useEffect(() => {
-    if (!prefs.showDemoData) {
+  useEffect(() => {
+    if (!showDemoData) {
       setData(null);
       return;
     }
     const next = getDashboardData(periodToDays[period], network);
     setData(next);
-  }, [period, network, prefs.showDemoData]);
+  }, [period, network, showDemoData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     const range = periodToDays[period];
     const days = range === "all" ? 365 : range;
@@ -81,7 +89,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
           setLoadingSnapshot(false);
         }
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (!cancelled) {
           console.error(`Failed to load snapshot for ${network}`, err);
           setSnapshot(null);
@@ -94,29 +102,50 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     };
   }, [network, period]);
 
+  const handleYoutubeSearch = async () => {
+    if (!youtubeSearchQuery.trim()) return;
+    setLoadingYoutubeSearch(true);
+    setYoutubeSearchError(null);
+    try {
+      const { results } = await searchYouTubeChannels(youtubeSearchQuery);
+      setYoutubeSearchResults(results);
+    } catch (error: unknown) {
+      console.error("YouTube search failed:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to search YouTube channels.";
+      setYoutubeSearchError(message);
+      setYoutubeSearchResults([]);
+    } finally {
+      setLoadingYoutubeSearch(false);
+    }
+  };
+
   const fmtDate = (isoDate: string) =>
     `${isoDate.slice(8, 10)}/${isoDate.slice(5, 7)}`;
 
-  const totalViews = React.useMemo(() => {
-    if (snapshot?.profile.views) {
+  const totalViews = useMemo(() => {
+    if (snapshot?.profile?.views) {
       return snapshot.profile.views;
     }
-    if (prefs.showDemoData && data) {
+    if (showDemoData && data) {
       return data.trendStack.reduce((s, d) => s + (d[network] as number), 0);
     }
     return 0;
-  }, [snapshot, data, network, prefs.showDemoData]);
+  }, [snapshot, data, network, showDemoData]);
 
   type DashboardPost = MockPost & { url?: string };
 
-  const postsForDisplay = React.useMemo<DashboardPost[]>(() => {
+  const postsForDisplay = useMemo<DashboardPost[]>(() => {
     if (snapshot?.topPosts?.length) {
-      return snapshot.topPosts.map((p) => ({
+      return snapshot.topPosts.map((p: any) => ({
         id: p.id,
         title: p.title || `${network.toUpperCase()} Post`,
         network: (p.network as NetworkName) ?? network,
         thumbnailUrl:
-          p.thumbnail || `https://picsum.photos/seed/${p.network}-${p.id}/300/200`,
+          p.thumbnail ||
+          `https://picsum.photos/seed/${p.network}-${p.id}/300/200`,
         engagementRate: p.engagementRate ?? 0,
         views: p.views ?? p.impressions ?? 0,
         date: p.publishedAt ?? new Date().toISOString(),
@@ -125,12 +154,13 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     }
     if (snapshot?.posts?.length) {
       return snapshot.posts
-        .map((p) => ({
+        .map((p: any) => ({
           id: p.id,
           title: p.title || `${network.toUpperCase()} Post`,
           network: (p.network as NetworkName) ?? network,
           thumbnailUrl:
-            p.thumbnail || `https://picsum.photos/seed/${p.network}-${p.id}/300/200`,
+            p.thumbnail ||
+            `https://picsum.photos/seed/${p.network}-${p.id}/300/200`,
           engagementRate: p.engagementRate ?? 0,
           views: p.views ?? p.impressions ?? 0,
           date: p.publishedAt ?? new Date().toISOString(),
@@ -139,64 +169,64 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         .sort((a, b) => (b.engagementRate || 0) - (a.engagementRate || 0))
         .slice(0, 6);
     }
-    if (prefs.showDemoData && data) {
+    if (showDemoData && data) {
       return data.topPosts.map((post) => ({ ...post, url: "#" }));
     }
     return [];
-  }, [snapshot, data, network, prefs.showDemoData]);
+  }, [snapshot, data, network, showDemoData]);
 
-  const averageEngagement = React.useMemo(() => {
-    if (snapshot?.profile.engagementRate !== undefined) {
+  const averageEngagement = useMemo(() => {
+    if (snapshot?.profile?.engagementRate !== undefined) {
       return snapshot.profile.engagementRate;
     }
     if (snapshot?.posts?.length) {
       const sum = snapshot.posts.reduce(
-        (acc, p) => acc + (p.engagementRate ?? 0),
+        (acc: number, p: any) => acc + (p.engagementRate ?? 0),
         0
       );
       return sum / snapshot.posts.length;
     }
-    if (prefs.showDemoData && data?.topPosts.length) {
+    if (showDemoData && data?.topPosts.length) {
       const sum = data.topPosts.reduce((acc, p) => acc + p.engagementRate, 0);
       return sum / data.topPosts.length;
     }
     return 0;
-  }, [snapshot, data, prefs.showDemoData]);
+  }, [snapshot, data, showDemoData]);
 
-  const chartRows = React.useMemo(() => {
+  const chartRows = useMemo(() => {
     if (snapshot?.trends?.length) {
-      return snapshot.trends.map((point) => ({
+      return snapshot.trends.map((point: any) => ({
         date: point.date,
         [network]: point.views,
       }));
     }
-    if (prefs.showDemoData && data) {
+    if (showDemoData && data) {
       return data.trendStack;
     }
     return [] as Array<Record<string, number | string>>;
-  }, [snapshot, network, data, prefs.showDemoData]);
+  }, [snapshot, network, data, showDemoData]);
 
   const chartIsEmpty = chartRows.length === 0;
 
   const kpis = [
-    { label: "Vues", value: totalViews.toLocaleString() },
+    { label: t("dashboard.kpi.views"), value: totalViews.toLocaleString() },
     {
-      label: "Posts (période)",
+      label: t("dashboard.kpi.posts"),
       value: (snapshot?.posts?.length ?? data?.topPosts.length ?? 0).toString(),
     },
     {
-      label: "Comptes rattachés",
+      label: t("dashboard.kpi.accounts"),
       value: accountsOfNetwork.length.toString(),
     },
     {
-      label: "Engagement moyen",
+      label: t("dashboard.kpi.engagement"),
       value: `${(averageEngagement * 100).toFixed(1)}%`,
     },
   ];
 
   return (
     <div className="p-8 space-y-8 bg-gray-50 min-h-screen overflow-auto">
-      {!prefs.showDemoData && !snapshot && !loadingSnapshot && (
+      {!showDemoData && !snapshot && !loadingSnapshot && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-2xl">
           {t("network.demoDisabledNotice")}
         </div>
@@ -204,20 +234,22 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <SocialIcon name={network} size={28} />
-          <h2 className="text-2xl font-bold capitalize">{network}</h2>
+          <h2 className="text-2xl font-bold capitalize">
+            {t(toNavKey(network))}
+          </h2>
         </div>
 
         <div className="flex items-center gap-2">
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as Period)}
-            className="border rounded-lg px-3 py-1 text-sm bg-white"
+            className="border rounded-lg px-3 py-1 text-sm bg-white md:hidden"
           >
-            <option value="7d">7 jours</option>
-            <option value="30d">30 jours</option>
-            <option value="90d">90 jours</option>
-            <option value="365d">1 an</option>
-            <option value="all">Depuis toujours</option>
+            <option value="7d">{t("period.days", { count: 7 })}</option>
+            <option value="30d">{t("period.days", { count: 30 })}</option>
+            <option value="90d">{t("period.days", { count: 90 })}</option>
+            <option value="365d">{t("period.year", { count: 1 })}</option>
+            <option value="all">{t("period.allTime")}</option>
           </select>
 
           <div className="hidden md:flex gap-2">
@@ -238,12 +270,81 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
         </div>
       </div>
 
+      {network === "youtube" && (
+        <div className="bg-white border rounded-2xl p-6 shadow-sm">
+          <h3 className="font-semibold mb-4 text-lg">
+            {t("youtube.search.title")}
+          </h3>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder={t("youtube.search.placeholder")}
+              className="flex-1 border rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              value={youtubeSearchQuery}
+              onChange={(e) => setYoutubeSearchQuery(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleYoutubeSearch();
+                }
+              }}
+            />
+            <Button
+              onClick={handleYoutubeSearch}
+              disabled={loadingYoutubeSearch}
+            >
+              {loadingYoutubeSearch
+                ? t("youtube.search.loading")
+                : t("youtube.search.button")}
+            </Button>
+          </div>
+
+          {youtubeSearchError && (
+            <p className="text-red-500 mb-4">
+              {t("youtube.search.error", { message: youtubeSearchError })}
+            </p>
+          )}
+
+          {youtubeSearchResults.length > 0 && (
+            <div className="space-y-4">
+              {youtubeSearchResults.map((channel: any) => (
+                <a
+                  key={channel.id}
+                  href={channel.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <img
+                    src={channel.thumbnailUrl}
+                    alt={channel.title}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      {channel.title}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {channel.description}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+          {youtubeSearchQuery.trim() &&
+            !loadingYoutubeSearch &&
+            youtubeSearchResults.length === 0 &&
+            !youtubeSearchError && (
+              <p className="text-gray-500">
+                {t("youtube.search.noResults", { query: youtubeSearchQuery })}
+              </p>
+            )}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {kpis.map((k) => (
-          <div
-            key={k.label}
-            className="bg-white border rounded-2xl p-4 shadow-sm"
-          >
+        {kpis.map((k, i) => (
+          <div key={i} className="bg-white border rounded-2xl p-4 shadow-sm">
             <div className="text-xs text-gray-500">{k.label}</div>
             <div className="text-2xl font-semibold">{k.value}</div>
           </div>
@@ -252,7 +353,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
 
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-4 text-lg">
-          Tendances des vues • {period.toUpperCase()}
+          {t("dashboard.trend.title")} • {period.toUpperCase()}
         </h3>
         {loadingSnapshot ? (
           <div className="h-[360px] flex items-center justify-center text-gray-400">
@@ -260,7 +361,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
           </div>
         ) : chartIsEmpty ? (
           <div className="h-[360px] flex items-center justify-center text-gray-400 text-center px-4">
-            {prefs.showDemoData
+            {showDemoData
               ? t("dashboard.topContent.noData")
               : t("network.demoDisabledNotice")}
           </div>
@@ -282,16 +383,19 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
           </ResponsiveContainer>
         )}
         <div className="mt-3 text-xs text-gray-500">
-          Total vues sur la période : {totalViews.toLocaleString()}
+          {t("dashboard.trend.totalViews")}: {totalViews.toLocaleString()}
         </div>
       </div>
 
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-6 text-xl">
-          Top contenus ({network}) — période {period.toUpperCase()}
+          {t("dashboard.topContent.title", { network: t(toNavKey(network)) })} —{" "}
+          {t("period.label")} {period.toUpperCase()}
         </h3>
         {loadingSnapshot && (
-          <p className="text-gray-500 text-sm">Chargement des contenus…</p>
+          <p className="text-gray-500 text-sm">
+            {t("dashboard.topContent.loading")}
+          </p>
         )}
         {snapshotError && (
           <p className="text-amber-600 text-sm mb-3">
@@ -299,7 +403,9 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
           </p>
         )}
         {postsForDisplay.length === 0 ? (
-          <p className="text-gray-500 text-sm">Aucun contenu sur cette période.</p>
+          <p className="text-gray-500 text-sm">
+            {t("dashboard.topContent.noDataPeriod")}
+          </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {postsForDisplay.map((p) => (
@@ -328,7 +434,8 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
                     {p.title}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    {new Date(p.date).toLocaleDateString()} • {p.views.toLocaleString()} vues
+                    {new Date(p.date).toLocaleDateString()} •{" "}
+                    {p.views.toLocaleString()} {t("dashboard.kpi.views")}
                   </div>
                 </div>
               </a>
@@ -339,12 +446,10 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
 
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-4 text-lg">
-          Comptes ({network}) rattachés
+          {t("sidebar.accountsFor", { network: t(toNavKey(network)) })}
         </h3>
         {accountsOfNetwork.length === 0 ? (
-          <p className="text-gray-500 text-sm">
-            Aucun compte ajouté pour ce réseau.
-          </p>
+          <p className="text-gray-500 text-sm">{t("sidebar.noAccounts")}</p>
         ) : (
           <ul className="divide-y">
             {accountsOfNetwork.map((a) => (

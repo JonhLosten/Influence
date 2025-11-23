@@ -1,4 +1,4 @@
-import { NetworkName } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 
 export type PeriodDays = number | "all";
 
@@ -28,7 +28,10 @@ function prng(seed: number) {
   return x - Math.floor(x);
 }
 
-export function getDashboardData(days: PeriodDays = 7, focusNetwork?: NetworkName) {
+export function getDashboardData(
+  days: PeriodDays = 7,
+  focusNetwork?: NetworkName
+) {
   const today = new Date();
   const totalDays = days === "all" ? 730 : days;
   const series: TrendDay[] = [];

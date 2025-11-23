@@ -1,5 +1,5 @@
 import React from "react";
-import { NetworkName } from "../store/useAppState";
+import type { NetworkName } from "../store/useAppState";
 import { SocialIcon } from "./SocialIcon";
 
 interface AccountPreviewProps {
@@ -25,7 +25,9 @@ export const AccountPreviewModal: React.FC<AccountPreviewProps> = ({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 w-96 shadow-lg text-center space-y-4">
-        <h2 className="text-lg font-semibold text-gray-800">Confirmer le compte</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Confirmer le compte
+        </h2>
         <img
           src={account.avatar}
           alt={account.displayName}

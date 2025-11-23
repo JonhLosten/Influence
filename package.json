@@ -2,6 +2,7 @@
   "name": "influence",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@10.8.1",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -16,7 +17,7 @@
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
     "format": "prettier --check .",
-    "test": "tsx --test \"tests/**/*.ts\"",
+    "test": "turbo run test",
     "quality": "npm run lint && npm run typecheck && npm run test",
     "make": "turbo run build --filter=@influence/desktop && electron-forge make",
     "package": "turbo run build --filter=@influence/desktop && electron-forge package"
@@ -57,5 +58,9 @@
       "eslint --fix"
     ]
   },
-  "main": "apps/desktop/dist/main.js"
+  "main": "apps/desktop/dist/main.js",
+  "dependencies": {
+    "@types/recharts": "^1.8.29",
+    "recharts": "^3.5.0"
+  }
 }

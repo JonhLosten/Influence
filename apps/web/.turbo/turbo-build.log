@@ -1,0 +1,104 @@
+
+> @influence/web@0.0.0 build
+> tsc && vite build
+
+src/components/AddAccountModal.tsx(21,11): error TS2339: Property 'prefs' does not exist on type 'PreferencesState'.
+src/components/OnboardingModal.tsx(6,11): error TS2339: Property 'preferences' does not exist on type 'PreferencesState'.
+src/components/OnboardingModal.tsx(6,24): error TS2339: Property 'setPreference' does not exist on type 'PreferencesState'.
+src/components/OnboardingModal.tsx(91,21): error TS2322: Type '{ children: string; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonHTMLAttributes<HTMLButtonElement> & RefAttributes<HTMLButtonElement>'.
+  Property 'variant' does not exist on type 'IntrinsicAttributes & ButtonHTMLAttributes<HTMLButtonElement> & RefAttributes<HTMLButtonElement>'.
+src/services/analytics.ts(1,10): error TS1484: 'NetworkName' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/services/suggestAccounts.ts(1,10): error TS1484: 'NetworkName' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/useAppState.tsx(50,48): error TS2345: Argument of type '() => { networkOrder: ("instagram" | "facebook" | "tiktok" | "youtube")[]; accounts: never[]; folders: string[]; activeFolder: undefined; }' is not assignable to parameter of type 'AppState | (() => AppState)'.
+  Type '() => { networkOrder: ("instagram" | "facebook" | "tiktok" | "youtube")[]; accounts: never[]; folders: string[]; activeFolder: undefined; }' is not assignable to type '() => AppState'.
+    Call signature return types '{ networkOrder: ("instagram" | "facebook" | "tiktok" | "youtube")[]; accounts: never[]; folders: string[]; activeFolder: undefined; }' and 'AppState' are incompatible.
+      The types of 'activeFolder' are incompatible between these types.
+        Type 'undefined' is not assignable to type 'string'.
+src/store/useAppState.tsx(87,14): error TS2345: Argument of type '(s: AppState) => { folders: string[]; accounts: Account[]; activeFolder: string | undefined; networkOrder: NetworkName[]; }' is not assignable to parameter of type 'SetStateAction<AppState>'.
+  Type '(s: AppState) => { folders: string[]; accounts: Account[]; activeFolder: string | undefined; networkOrder: NetworkName[]; }' is not assignable to type '(prevState: AppState) => AppState'.
+    Call signature return types '{ folders: string[]; accounts: Account[]; activeFolder: string | undefined; networkOrder: NetworkName[]; }' and 'AppState' are incompatible.
+      The types of 'activeFolder' are incompatible between these types.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/store/useAppState.tsx(98,14): error TS2345: Argument of type '(s: AppState) => { activeFolder: string | undefined; networkOrder: NetworkName[]; accounts: Account[]; folders: string[]; }' is not assignable to parameter of type 'SetStateAction<AppState>'.
+  Type '(s: AppState) => { activeFolder: string | undefined; networkOrder: NetworkName[]; accounts: Account[]; folders: string[]; }' is not assignable to type '(prevState: AppState) => AppState'.
+    Call signature return types '{ activeFolder: string | undefined; networkOrder: NetworkName[]; accounts: Account[]; folders: string[]; }' and 'AppState' are incompatible.
+      The types of 'activeFolder' are incompatible between these types.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/ui/App.tsx(11,10): error TS1484: 'NetworkName' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/ui/Sidebar.tsx(209,15): error TS2367: This comparison appears to be unintentional because the types 'Route' and 'NetworkName' have no overlap.
+src/ui/Sidebar.tsx(228,17): error TS2367: This comparison appears to be unintentional because the types 'Route' and 'NetworkName' have no overlap.
+src/ui/icons.tsx(2,10): error TS1484: 'NetworkName' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/views/Dashboard.tsx(14,23): error TS1484: 'LocaleKey' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/views/Dashboard.tsx(16,28): error TS1484: 'MockPost' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/views/Dashboard.tsx(18,10): error TS1484: 'NetworkName' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/views/Dashboard.tsx(63,11): error TS2339: Property 'prefs' does not exist on type 'PreferencesState'.
+src/views/Dashboard.tsx(146,55): error TS2345: Argument of type '() => { id: string; title: string; network: NetworkName; thumbnailUrl: string; engagementRate: number; views: number; date: string; url: string | undefined; }[]' is not assignable to parameter of type '() => DisplayPost[]'.
+  Type '{ id: string; title: string; network: NetworkName; thumbnailUrl: string; engagementRate: number; views: number; date: string; url: string | undefined; }[]' is not assignable to type 'DisplayPost[]'.
+    Type '{ id: string; title: string; network: NetworkName; thumbnailUrl: string; engagementRate: number; views: number; date: string; url: string | undefined; }' is not assignable to type 'DisplayPost' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Type '{ id: string; title: string; network: NetworkName; thumbnailUrl: string; engagementRate: number; views: number; date: string; url: string | undefined; }' is not assignable to type '{ url?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+        Types of property 'url' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+src/views/Dashboard.tsx(238,35): error TS7053: Element implicitly has an 'any' type because expression of type 'NetworkName' can't be used to index type '{ date: string; total: number; }'.
+  Property 'instagram' does not exist on type '{ date: string; total: number; }'.
+src/views/NetworkDashboard.tsx(39,3): error TS2353: Object literal may only specify known properties, and 'x' does not exist in type 'Record<NetworkName, string>'.
+src/views/NetworkDashboard.tsx(48,11): error TS2339: Property 'preferences' does not exist on type 'PreferencesState'.
+src/views/NetworkDashboard.tsx(130,19): error TS2339: Property 'profile' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(131,23): error TS2339: Property 'profile' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(142,19): error TS2339: Property 'topPosts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(143,23): error TS2339: Property 'topPosts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(156,19): error TS2339: Property 'posts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(157,23): error TS2339: Property 'posts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(170,16): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/views/NetworkDashboard.tsx(170,19): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/views/NetworkDashboard.tsx(180,19): error TS2339: Property 'profile' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(181,23): error TS2339: Property 'profile' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(183,19): error TS2339: Property 'posts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(184,28): error TS2339: Property 'posts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(188,29): error TS2339: Property 'posts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(201,19): error TS2339: Property 'trends' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(202,23): error TS2339: Property 'trends' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(219,25): error TS2339: Property 'posts' does not exist on type '{}'.
+src/views/NetworkDashboard.tsx(391,14): error TS2345: Argument of type '"dashboard.trend.totalViews"' is not assignable to parameter of type '"ratio" | "disconnected" | "network" | "finish" | "loading" | "caption" | "size" | "next" | "previous" | "welcome_message" | "toggle_light_mode" | "toggle_dark_mode" | "onboarding_step_1_title" | ... 231 more ... | "videoPublisher.statusMonitoring"'.
+src/views/NetworkDashboard.tsx(397,14): error TS2345: Argument of type '"dashboard.topContent.title"' is not assignable to parameter of type '"ratio" | "disconnected" | "network" | "finish" | "loading" | "caption" | "size" | "next" | "previous" | "welcome_message" | "toggle_light_mode" | "toggle_dark_mode" | "onboarding_step_1_title" | ... 231 more ... | "videoPublisher.statusMonitoring"'.
+src/views/NetworkDashboard.tsx(398,16): error TS2345: Argument of type '"period.label"' is not assignable to parameter of type '"ratio" | "disconnected" | "network" | "finish" | "loading" | "caption" | "size" | "next" | "previous" | "welcome_message" | "toggle_light_mode" | "toggle_dark_mode" | "onboarding_step_1_title" | ... 231 more ... | "videoPublisher.statusMonitoring"'.
+src/views/NetworkDashboard.tsx(401,51): error TS2345: Argument of type '"dashboard.topContent.loading"' is not assignable to parameter of type '"ratio" | "disconnected" | "network" | "finish" | "loading" | "caption" | "size" | "next" | "previous" | "welcome_message" | "toggle_light_mode" | "toggle_dark_mode" | "onboarding_step_1_title" | ... 231 more ... | "videoPublisher.statusMonitoring"'.
+src/views/Troubleshooting.tsx(74,11): error TS2339: Property 'preferences' does not exist on type 'PreferencesState'.
+src/views/Troubleshooting.tsx(125,49): error TS18046: 'error' is of type 'unknown'.
+src/views/Troubleshooting.tsx(138,53): error TS18046: 'error' is of type 'unknown'.
+src/views/VideoPublisher.tsx(98,9): error TS18046: 'error' is of type 'unknown'.
+src/views/_dataMock.ts(1,10): error TS1484: 'NetworkName' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+../../node_modules/@reduxjs/toolkit/dist/index.d.mts(1019,148): error TS2344: Type '{ [K in keyof (ThunkApiConfig & Omit<CurriedThunkApiConfig, keyof ThunkApiConfig>)]: (ThunkApiConfig & Omit<...>)[K]; }' does not satisfy the constraint 'AsyncThunkConfig'.
+  Types of property 'dispatch' are incompatible.
+    Type 'ThunkApiConfig["dispatch"] & CurriedThunkApiConfig["dispatch"]' is not assignable to type 'ThunkDispatch<unknown, unknown, UnknownAction>'.
+../../node_modules/@reduxjs/toolkit/dist/index.d.mts(1019,251): error TS2344: Type '{ [K in keyof (ThunkApiConfig & Omit<CurriedThunkApiConfig, keyof ThunkApiConfig>)]: (ThunkApiConfig & Omit<...>)[K]; }' does not satisfy the constraint 'AsyncThunkConfig'.
+  Types of property 'dispatch' are incompatible.
+    Type 'ThunkApiConfig["dispatch"] & CurriedThunkApiConfig["dispatch"]' is not assignable to type 'ThunkDispatch<unknown, unknown, UnknownAction>'.
+../../node_modules/@reduxjs/toolkit/dist/index.d.mts(1019,348): error TS2344: Type '{ [K in keyof (ThunkApiConfig & Omit<CurriedThunkApiConfig, keyof ThunkApiConfig>)]: (ThunkApiConfig & Omit<...>)[K]; }' does not satisfy the constraint 'AsyncThunkConfig'.
+  Types of property 'dispatch' are incompatible.
+    Type 'ThunkApiConfig["dispatch"] & CurriedThunkApiConfig["dispatch"]' is not assignable to type 'ThunkDispatch<unknown, unknown, UnknownAction>'.
+../../node_modules/@reduxjs/toolkit/dist/index.d.mts(1022,76): error TS2344: Type '{ [K in keyof (ThunkApiConfig & Omit<CurriedThunkApiConfig, keyof ThunkApiConfig>)]: (ThunkApiConfig & Omit<...>)[K]; }' does not satisfy the constraint 'AsyncThunkConfig'.
+  Types of property 'dispatch' are incompatible.
+    Type 'ThunkApiConfig["dispatch"] & CurriedThunkApiConfig["dispatch"]' is not assignable to type 'ThunkDispatch<unknown, unknown, UnknownAction>'.
+../../node_modules/@reduxjs/toolkit/dist/index.d.mts(1732,101): error TS2344: Type '{ [K in keyof (ThunkApiConfig & Omit<CurriedThunkApiConfig, keyof ThunkApiConfig>)]: (ThunkApiConfig & Omit<...>)[K]; }' does not satisfy the constraint 'PreventCircular<AsyncThunkConfig>'.
+  Types of property 'state' are incompatible.
+    Type 'ThunkApiConfig["state"] & CurriedThunkApiConfig["state"]' is not assignable to type 'never'.
+../../node_modules/@reduxjs/toolkit/dist/index.d.mts(2109,15): error TS2420: Class 'TaskAbortError' incorrectly implements interface 'SerializedError'.
+  Types of property 'code' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+../../node_modules/recharts/types/state/selectors/axisSelectors.d.ts(146,74): error TS2694: Namespace '"/home/user/Influence/node_modules/redux/dist/redux"' has no exported member 'EmptyObject'.
+../../node_modules/recharts/types/state/selectors/axisSelectors.d.ts(214,74): error TS2694: Namespace '"/home/user/Influence/node_modules/redux/dist/redux"' has no exported member 'EmptyObject'.
+../../node_modules/recharts/types/state/selectors/axisSelectors.d.ts(310,72): error TS2694: Namespace '"/home/user/Influence/node_modules/redux/dist/redux"' has no exported member 'EmptyObject'.
+../../node_modules/recharts/types/state/selectors/axisSelectors.d.ts(385,100): error TS2694: Namespace '"/home/user/Influence/node_modules/redux/dist/redux"' has no exported member 'EmptyObject'.
+../../node_modules/recharts/types/state/selectors/axisSelectors.d.ts(459,69): error TS2694: Namespace '"/home/user/Influence/node_modules/redux/dist/redux"' has no exported member 'EmptyObject'.
+../../node_modules/recharts/types/state/store.d.ts(2,68): error TS2694: Namespace '"/home/user/Influence/node_modules/redux/dist/redux"' has no exported member 'CombinedState'.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path /home/user/Influence/apps/web
+npm error workspace @influence/web@0.0.0
+npm error location /home/user/Influence/apps/web
+npm error command failed
+npm error command sh -c tsc && vite build

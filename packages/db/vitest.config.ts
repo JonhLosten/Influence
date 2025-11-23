@@ -9,6 +9,7 @@ export default defineConfig({
       "node_modules/",
       "drizzle/", // Exclude migration files
     ],
+    include: ["src/**/*.test.ts"], // Only include test files from the src directory
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

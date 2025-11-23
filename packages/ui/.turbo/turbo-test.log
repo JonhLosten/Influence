@@ -1,0 +1,50 @@
+
+> @influence/ui@1.0.0 test
+> vitest
+
+
+ DEV  v1.6.1 /home/user/Influence/packages/ui
+
+ ✓ dummy.test.ts  (1 test) 3ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  23:09:53
+   Duration  4.03s (transform 210ms, setup 686ms, collect 32ms, tests 3ms, environment 2.50s, prepare 431ms)
+
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+[3Jc
+ RERUN  package.json x1
+
+ ✓ dummy.test.ts  (1 test) 11ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  23:18:24
+   Duration  414ms
+
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+       rerun x1
+[2K[1A[2K[G[1;1H[JTest removed... [ dummy.test.ts ]
+
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'logUpdate')
+ ❯ createListRenderer node_modules/vitest/dist/vendor/index.-xs08BYx.js:1936:30
+ ❯ DefaultReporter.onTestRemoved node_modules/vitest/dist/vendor/index.-xs08BYx.js:2007:5
+ ❯ Vitest.report node_modules/vitest/dist/vendor/cli-api.OdDWuB7Y.js:11537:5
+
+
+
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /home/user/Influence/packages/ui
+npm error workspace @influence/ui@1.0.0
+npm error location /home/user/Influence/packages/ui
+npm error command failed
+npm error command sh -c vitest

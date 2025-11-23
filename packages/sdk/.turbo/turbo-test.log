@@ -1,0 +1,106 @@
+
+> @influence/sdk@1.0.0 test
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v1.6.1 /home/user/Influence/packages/sdk
+
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts  (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts [ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts ]
+Error: ENOENT: no such file or directory, scandir '/home/user/Influence/packages/sdk/node_modules/test-data/merge/ranges'
+ ❯ Object.readdirSync node:fs:1506:26
+ ❯ getSourcesFrom node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts:234:49
+    232| 
+    233|         const inputFileNames: string[] = await fs.promises.readdir(ben…
+    234|         const inputPromises: Promise<ProcessCov>[] = [];
+       |                                                 ^
+    235|         for (const inputFileName of inputFileNames) {
+    236|           const resolved: string = path.join(bench, inputFileName);
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts:169:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'scandir', path: '/home/user/Influence/packages/sdk/node_modules/test-data/merge/ranges' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  14:45:00
+   Duration  3.76s (transform 1.10s, setup 209ms, collect 0ms, tests 0ms, environment 0ms, prepare 1.12s)
+
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit
+
+Restarting due to config changes...
+
+ DEV  v1.6.1 /home/user/Influence/packages/sdk
+
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts  (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts [ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts ]
+Error: ENOENT: no such file or directory, scandir '/home/user/Influence/packages/sdk/node_modules/test-data/merge/ranges'
+ ❯ Object.readdirSync node:fs:1506:26
+ ❯ getSourcesFrom node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts:234:49
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts:169:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'scandir', path: '/home/user/Influence/packages/sdk/node_modules/test-data/merge/ranges' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  14:52:05
+   Duration  1.39s (transform 0ms, setup 57ms, collect 0ms, tests 0ms, environment 1ms, prepare 665ms)
+
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit
+[3Jc
+ RERUN  package.json x1
+
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts  (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts [ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts ]
+Error: ENOENT: no such file or directory, scandir '/home/user/Influence/packages/sdk/node_modules/test-data/merge/ranges'
+ ❯ Object.readdirSync node:fs:1506:26
+ ❯ getSourcesFrom node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts:234:49
+ ❯ node_modules/@bcoe/v8-coverage/src/test/merge.spec.ts:169:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'scandir', path: '/home/user/Influence/packages/sdk/node_modules/test-data/merge/ranges' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  14:53:01
+   Duration  21ms
+
+
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit
+       rerun x1
+[2K[1A[2K[G
+Restarting due to config changes...
+
+ DEV  v1.6.1 /home/user/Influence/packages/sdk
+
+include: src/**/*.test.ts
+exclude:  node_modules/
+watch exclude:  **/node_modules/**, **/dist/**
+
+No test files found, exiting with code 1
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /home/user/Influence/packages/sdk
+npm error workspace @influence/sdk@1.0.0
+npm error location /home/user/Influence/packages/sdk
+npm error command failed
+npm error command sh -c vitest

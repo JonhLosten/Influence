@@ -2,16 +2,15 @@
   "name": "@influence/db",
   "version": "0.0.1",
   "description": "",
+  "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
     "build:drizzle-config": "tsc --project tsconfig.json drizzle.config.ts",
-    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:generate": "drizzle-kit-esm generate --config=drizzle.config.ts",
     "db:migrate": "node --loader ts-node/esm src/migrate.ts",
     "db:seed": "node --loader ts-node/esm src/seed.ts",
-    "db:push": "drizzle-kit push --config=drizzle.config.ts",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "db:push": "drizzle-kit-esm push --config=drizzle.config.ts"
   },
   "keywords": [],
   "author": "",
