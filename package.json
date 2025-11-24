@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "prepare": "husky",
+    "prepare": "npx husky",
     "dev": "turbo run dev --parallel --filter=@influence/web",
     "dev:desktop": "turbo run dev --filter=@influence/desktop",
     "dev:web": "turbo run dev --filter=@influence/web",
