@@ -1,5 +1,5 @@
 {
-  "extends": "@influence/config/tsconfig",
+  "extends": "../../packages/config/src/tsconfig.base.json",
   "compilerOptions": {
     "module": "ESNext",
     "target": "ES2022",
@@ -11,8 +11,10 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
-  "include": ["src", "vite.config.mjs", "tailwind.config.js"],
+  "include": ["src", "vite.config.mjs", "tailwind.config.js", "src/types"],
   "exclude": ["dist", "node_modules"]
 }

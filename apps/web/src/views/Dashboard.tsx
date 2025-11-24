@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 import { useLanguage } from "../i18n";
-import type { LocaleKey } from "../i18n";
+import type { LocaleKey } from "i18n";
 import { SocialIcon } from "../components/SocialIcon";
 import { getDashboardData } from "./_dataMock";
 import type { MockPost } from "./_dataMock";
@@ -626,8 +626,7 @@ export const Dashboard: React.FC = () => {
                         ? "text-rose-500"
                         : "text-emerald-600"
                     }`}
-                  >
-                    {deltaDisplay}
+                  >                    {deltaDisplay}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 leading-snug">

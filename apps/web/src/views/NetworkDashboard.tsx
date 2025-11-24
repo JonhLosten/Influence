@@ -17,7 +17,7 @@ import { SocialIcon } from "../components/SocialIcon";
 import { fetchNetworkSnapshot, searchYouTubeChannels } from "../lib/api";
 import { usePreferences } from "../store/usePreferences";
 import { useLanguage } from "../i18n";
-import type { LocaleKey } from "../i18n";
+import type { LocaleKey } from "i18n";
 import { Button } from "../components/button";
 
 // Add new types for stronger typing
@@ -139,16 +139,17 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     setLoadingSnapshot(true);
     setSnapshotError(null);
     fetchNetworkSnapshot(network, days)
-      .then((payload) => {
+      .then((payload: unknown) => { // Accept as unknown
+        const typedPayload = payload as NetworkSnapshot; // Assert type here
         if (!cancelled) {
           // Ensure payload conforms to NetworkSnapshot
           setSnapshot({
-            profile: payload.profile || EMPTY_SNAPSHOT.profile,
-            topPosts: payload.topPosts || EMPTY_SNAPSHOT.topPosts,
-            posts: payload.posts || EMPTY_SNAPSHOT.posts,
-            trends: payload.trends || EMPTY_SNAPSHOT.trends,
-            summaries: payload.summaries || EMPTY_SNAPSHOT.summaries,
-            networks: payload.networks || EMPTY_SNAPSHOT.networks,
+            profile: typedPayload.profile || EMPTY_SNAPSHOT.profile,
+            topPosts: typedPayload.topPosts || EMPTY_SNAPSHOT.topPosts,
+            posts: typedPayload.posts || EMPTY_SNAPSHOT.posts,
+            trends: typedPayload.trends || EMPTY_SNAPSHOT.trends,
+            summaries: typedPayload.summaries || EMPTY_SNAPSHOT.summaries,
+            networks: typedPayload.networks || EMPTY_SNAPSHOT.networks,
           });
           setLoadingSnapshot(false);
         }
@@ -454,7 +455,8 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-6 text-xl">
           {t("dashboard.topContent.title", { network: t(toNavKey(network)) })} —{" "}
-          {t("period.allTime")} {period.toUpperCase()}
+          {t("period.allTime")}
+          {period.toUpperCase()}
         </h3>
         {loadingSnapshot && (
           <p className="text-gray-500 text-sm">
@@ -513,7 +515,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
           {t("sidebar.accountsFor", { network: t(toNavKey(network)) })}
         </h3>
         {accountsOfNetwork.length === 0 ? (
-          <p className="text-gray-500 text-sm">{t("sidebar.noAccounts")}</p>
+          <p className="text-gray-500 text-sm">Nombre de comptes</p>
         ) : (
           <ul className="divide-y">
             {accountsOfNetwork.map((a) => (

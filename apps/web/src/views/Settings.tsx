@@ -1,5 +1,6 @@
 import React from "react";
 import { useLanguage } from "../i18n";
+import type { LocaleKey } from "i18n";
 import { usePreferences } from "../store/usePreferences";
 
 const Settings: React.FC = () => {

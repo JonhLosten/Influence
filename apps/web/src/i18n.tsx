@@ -7,12 +7,20 @@ import React, {
 import fr from "./locales/fr.json";
 import en from "./locales/en.json";
 
-export type LocaleKey = keyof typeof fr;
 export type Lang = "fr" | "en";
 
-type Dictionary = Record<LocaleKey, string>;
+// ✅ Toutes les clés de fr.json deviennent le type LocaleKey
+export type LocaleKey = keyof typeof fr;
 
-const DICTS: Record<Lang, Dictionary> = { fr, en };
+// ✅ Le dictionnaire de référence autorise les dictionnaires partiels
+type Dictionary = Partial<Record<LocaleKey, string>>;
+
+// ✅ DICTS : fr est la source de vérité, en doit matcher
+const DICTS: Record<Lang, Dictionary> = {
+  fr,
+  en,
+};
+
 const STORAGE_KEY = "influenceops.lang";
 const DEFAULT_LANG: Lang = "fr";
 
@@ -23,7 +31,8 @@ function readStoredLang(): Lang {
     if (value === "en" || value === "fr") {
       return value;
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.warn("Unable to read language from storage", err);
   }
   return DEFAULT_LANG;
@@ -43,7 +52,8 @@ class LanguageRuntime {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(STORAGE_KEY, next);
-    } catch (err) {
+    }
+    catch (err) {
       console.warn("Unable to persist language", err);
     }
   }
@@ -69,8 +79,13 @@ class LanguageRuntime {
 
   translate = (key: LocaleKey, replacements?: ReplacementMap) => {
     const dict = DICTS[this.lang] || DICTS[DEFAULT_LANG];
-    const template = dict[key] ?? key;
+    const template =
+      dict[key] ??
+      DICTS[DEFAULT_LANG][key] ?? // fallback FR si la clé manque en EN
+      key;
+
     if (!replacements) return template;
+
     return Object.entries(replacements).reduce((acc, [token, value]) => {
       return acc.replace(new RegExp(`{{\\s*${token}\\s*}}`, "g"), String(value));
     }, template);
