@@ -92,12 +92,15 @@ export function VideoPublisher() {
           setLoading(false);
         }
       }, 5000); // Poll every 5 seconds
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to create publish job:", error);
-      setJobError(
-        error.message ||
+      if (error instanceof Error) {
+        setJobError(error.message);
+      } else {
+        setJobError(
           "An unknown error occurred while creating the publishing job."
-      );
+        );
+      }
       setLoading(false);
     }
   };

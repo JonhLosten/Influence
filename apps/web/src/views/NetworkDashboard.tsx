@@ -20,7 +20,44 @@ import { useLanguage } from "../i18n";
 import type { LocaleKey } from "../i18n";
 import { Button } from "../components/button";
 
-export type NetworkSnapshot = Awaited<ReturnType<typeof fetchNetworkSnapshot>>;
+// Add new types for stronger typing
+interface YouTubeChannel {
+  id: string;
+  link: string;
+  thumbnailUrl: string;
+  title: string;
+  description: string;
+}
+
+interface SnapshotPost {
+  id: string;
+  title?: string;
+  network?: NetworkName;
+  thumbnail?: string;
+  engagementRate?: number;
+  views?: number;
+  impressions?: number;
+  publishedAt?: string;
+  url?: string;
+}
+
+interface TrendPoint {
+  date: string;
+  views: number;
+}
+
+// Explicitly define NetworkSnapshot based on usage
+export interface NetworkSnapshot {
+  profile: {
+    views: number;
+    engagementRate: number;
+  };
+  topPosts: SnapshotPost[];
+  posts: SnapshotPost[];
+  trends: TrendPoint[];
+  summaries: Record<string, any>; // Assuming summaries is a record of something
+  networks: Record<NetworkName, number>; // Assuming networks is a record of NetworkName to number
+}
 
 type Period = "7d" | "30d" | "90d" | "365d" | "all";
 const periodToDays: Record<Period, PeriodDays> = {
@@ -43,6 +80,23 @@ type DashboardData = ReturnType<typeof getDashboardData>;
 const toNavKey = (network: NetworkName): LocaleKey =>
   `nav.${network}` as LocaleKey;
 
+const EMPTY_SNAPSHOT: NetworkSnapshot = {
+  profile: {
+    views: 0,
+    engagementRate: 0,
+  },
+  topPosts: [],
+  posts: [],
+  trends: [],
+  summaries: {}, // Initialize summaries as an empty object
+  networks: { // Initialize networks with default values for each NetworkName
+    instagram: 0,
+    facebook: 0,
+    tiktok: 0,
+    youtube: 0,
+  },
+};
+
 export function NetworkDashboard({ network }: { network: NetworkName }) {
   const { showDemoData } = usePreferences();
   const { t } = useLanguage();
@@ -50,13 +104,15 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
   const [data, setData] = useState<DashboardData | null>(() =>
     showDemoData ? getDashboardData(periodToDays["7d"], network) : null
   );
-  const [snapshot, setSnapshot] = useState<NetworkSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<NetworkSnapshot>(EMPTY_SNAPSHOT);
   const [loadingSnapshot, setLoadingSnapshot] = useState(false);
   const [snapshotError, setSnapshotError] = useState<"api" | null>(null);
 
   // State for YouTube Channel Search
   const [youtubeSearchQuery, setYoutubeSearchQuery] = useState<string>("");
-  const [youtubeSearchResults, setYoutubeSearchResults] = useState<any[]>([]);
+  const [youtubeSearchResults, setYoutubeSearchResults] = useState<
+    YouTubeChannel[]
+  >([]);
   const [loadingYoutubeSearch, setLoadingYoutubeSearch] = useState(false);
   const [youtubeSearchError, setYoutubeSearchError] = useState<string | null>(
     null
@@ -85,14 +141,22 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     fetchNetworkSnapshot(network, days)
       .then((payload) => {
         if (!cancelled) {
-          setSnapshot(payload);
+          // Ensure payload conforms to NetworkSnapshot
+          setSnapshot({
+            profile: payload.profile || EMPTY_SNAPSHOT.profile,
+            topPosts: payload.topPosts || EMPTY_SNAPSHOT.topPosts,
+            posts: payload.posts || EMPTY_SNAPSHOT.posts,
+            trends: payload.trends || EMPTY_SNAPSHOT.trends,
+            summaries: payload.summaries || EMPTY_SNAPSHOT.summaries,
+            networks: payload.networks || EMPTY_SNAPSHOT.networks,
+          });
           setLoadingSnapshot(false);
         }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
           console.error(`Failed to load snapshot for ${network}`, err);
-          setSnapshot(null);
+          setSnapshot(EMPTY_SNAPSHOT);
           setSnapshotError("api");
           setLoadingSnapshot(false);
         }
@@ -108,7 +172,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     setYoutubeSearchError(null);
     try {
       const { results } = await searchYouTubeChannels(youtubeSearchQuery);
-      setYoutubeSearchResults(results);
+      setYoutubeSearchResults(results as YouTubeChannel[]);
     } catch (error: unknown) {
       console.error("YouTube search failed:", error);
       const message =
@@ -135,11 +199,11 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     return 0;
   }, [snapshot, data, network, showDemoData]);
 
-  type DashboardPost = MockPost & { url?: string };
+  type DashboardPost = MockPost & { url: string | undefined };
 
-  const postsForDisplay = useMemo<DashboardPost[]>(() => {
+  const postsForDisplay: DashboardPost[] = useMemo<DashboardPost[]>(() => {
     if (snapshot?.topPosts?.length) {
-      return snapshot.topPosts.map((p: any) => ({
+      return snapshot.topPosts.map((p: SnapshotPost) => ({
         id: p.id,
         title: p.title || `${network.toUpperCase()} Post`,
         network: (p.network as NetworkName) ?? network,
@@ -154,7 +218,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     }
     if (snapshot?.posts?.length) {
       return snapshot.posts
-        .map((p: any) => ({
+        .map((p: SnapshotPost) => ({
           id: p.id,
           title: p.title || `${network.toUpperCase()} Post`,
           network: (p.network as NetworkName) ?? network,
@@ -181,7 +245,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
     }
     if (snapshot?.posts?.length) {
       const sum = snapshot.posts.reduce(
-        (acc: number, p: any) => acc + (p.engagementRate ?? 0),
+        (acc: number, p: SnapshotPost) => acc + (p.engagementRate ?? 0),
         0
       );
       return sum / snapshot.posts.length;
@@ -195,7 +259,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
 
   const chartRows = useMemo(() => {
     if (snapshot?.trends?.length) {
-      return snapshot.trends.map((point: any) => ({
+      return snapshot.trends.map((point: TrendPoint) => ({
         date: point.date,
         [network]: point.views,
       }));
@@ -306,7 +370,7 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
 
           {youtubeSearchResults.length > 0 && (
             <div className="space-y-4">
-              {youtubeSearchResults.map((channel: any) => (
+              {youtubeSearchResults.map((channel: YouTubeChannel) => (
                 <a
                   key={channel.id}
                   href={channel.link}
@@ -390,11 +454,11 @@ export function NetworkDashboard({ network }: { network: NetworkName }) {
       <div className="bg-white border rounded-2xl p-6 shadow-sm">
         <h3 className="font-semibold mb-6 text-xl">
           {t("dashboard.topContent.title", { network: t(toNavKey(network)) })} —{" "}
-          {t("period.label")} {period.toUpperCase()}
+          {t("period.allTime")} {period.toUpperCase()}
         </h3>
         {loadingSnapshot && (
           <p className="text-gray-500 text-sm">
-            {t("dashboard.topContent.loading")}
+            {t("loading")}
           </p>
         )}
         {snapshotError && (

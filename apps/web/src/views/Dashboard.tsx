@@ -60,12 +60,17 @@ const EMPTY_DASHBOARD_DATA: DashboardData = {
 const toNavKey = (network: NetworkName): LocaleKey =>
   `nav.${network}` as unknown as LocaleKey;
 
+type ChartDataPoint = {
+  date: string;
+  total: number;
+} & Partial<Record<NetworkName, number>>;
+
 export const Dashboard: React.FC = () => {
   const { lang, t } = useLanguage();
-  const { prefs } = usePreferences();
+  const { showDemoData } = usePreferences();
   const [period, setPeriod] = React.useState<Period>("7d");
   const [data, setData] = React.useState<DashboardData>(() =>
-    prefs.showDemoData
+    showDemoData
       ? getDashboardData(periodToDays["7d"])
       : EMPTY_DASHBOARD_DATA
   );
@@ -87,7 +92,7 @@ export const Dashboard: React.FC = () => {
 
   React.useEffect(() => {
     const range = periodToDays[period];
-    if (!prefs.showDemoData) {
+    if (!showDemoData) {
       setData(EMPTY_DASHBOARD_DATA);
       setLoading(false);
       return;
@@ -96,7 +101,7 @@ export const Dashboard: React.FC = () => {
     const next = getDashboardData(range);
     setData(next);
     setLoading(false);
-  }, [period, prefs.showDemoData]);
+  }, [period, showDemoData]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -145,7 +150,7 @@ export const Dashboard: React.FC = () => {
 
   const viewsLabel = t("dashboard.viewsLabel");
 
-  type DisplayPost = MockPost & { url?: string };
+  type DisplayPost = MockPost & { url: string | undefined };
 
   const postsToDisplay = React.useMemo<DisplayPost[]>(() => {
     if (overview?.topPosts) {
@@ -171,8 +176,8 @@ export const Dashboard: React.FC = () => {
     ? selectedNetworks
     : availableNetworks;
 
-  const chartData = React.useMemo(() => {
-    if (!prefs.showDemoData) {
+  const chartData = React.useMemo<ChartDataPoint[]>(() => {
+    if (!showDemoData) {
       if (!overview?.trends?.length)
         return [] as Array<{ date: string; total: number }>;
       return overview.trends.map((point) => ({
@@ -192,7 +197,7 @@ export const Dashboard: React.FC = () => {
       entry.total = total;
       return entry as typeof item & { total: number };
     });
-  }, [prefs.showDemoData, overview, data.trendStack, activeNetworks]);
+  }, [showDemoData, overview, data.trendStack, activeNetworks]);
 
   const movingWindow = React.useMemo(() => {
     switch (period) {
@@ -234,7 +239,7 @@ export const Dashboard: React.FC = () => {
       );
     }
 
-    if (!prefs.showDemoData) {
+    if (!showDemoData) {
       return activeNetworks.reduce(
         (acc, network) => {
           acc[network] = 0;
@@ -255,7 +260,7 @@ export const Dashboard: React.FC = () => {
       },
       {} as Record<NetworkName, number>
     );
-  }, [activeNetworks, chartData, overview, prefs.showDemoData]);
+  }, [activeNetworks, chartData, overview, showDemoData]);
 
   const filteredPosts = React.useMemo(() => {
     if (!selectedNetworks.length) return postsToDisplay;
@@ -411,8 +416,8 @@ export const Dashboard: React.FC = () => {
       ];
       const escape = (value: string | number | undefined) => {
         const str = value === undefined ? "" : String(value);
-        if (str.includes('"') || str.includes(",") || str.includes("\n")) {
-          return `"${str.replace(/"/g, '""')}"`;
+        if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+          return `"${str.replace(/"/g, "''")}"`;
         }
         return str;
       };
@@ -459,7 +464,7 @@ export const Dashboard: React.FC = () => {
       className="p-8 space-y-8 bg-gray-50 min-h-screen overflow-auto"
       key={lang}
     >
-      {!prefs.showDemoData && !overview && !overviewLoading && (
+      {!showDemoData && !overview && !overviewLoading && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-2xl">
           {t("dashboard.demoDisabledNotice")}
         </div>
@@ -612,7 +617,7 @@ export const Dashboard: React.FC = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-semibold">
-                    <SocialIcon name={networkKey} size={18} />
+                    <SocialIcon name={networkKey as NetworkName} size={18} />
                     {directionLabel}
                   </div>
                   <span
@@ -659,7 +664,7 @@ export const Dashboard: React.FC = () => {
           </div>
         ) : isChartEmpty ? (
           <div className="h-[350px] flex items-center justify-center text-gray-400 text-center px-4">
-            {prefs.showDemoData
+            {showDemoData
               ? t("dashboard.topContent.noData")
               : t("dashboard.demoDisabledNotice")}
           </div>
@@ -671,7 +676,7 @@ export const Dashboard: React.FC = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              {prefs.showDemoData ? (
+              {showDemoData ? (
                 activeNetworks.map((network) => (
                   <Bar
                     key={network}

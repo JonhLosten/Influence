@@ -13,7 +13,7 @@ interface AppState {
   networkOrder: NetworkName[];
   accounts: Account[];
   folders: string[]; // <— ajouté
-  activeFolder?: string;
+  activeFolder: string | undefined;
 }
 
 interface AppActions {

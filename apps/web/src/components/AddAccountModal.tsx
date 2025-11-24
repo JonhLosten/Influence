@@ -18,7 +18,7 @@ export const AddAccountModal: React.FC<{
   availableFolders = ["Par défaut"],
 }) => {
   const { t } = useLanguage();
-  const { prefs } = usePreferences();
+  const { showDemoData } = usePreferences();
   const [network, setNetwork] = React.useState<NetworkName>("instagram");
   const [query, setQuery] = React.useState("");
   const [folder, setFolder] = React.useState(
@@ -37,7 +37,7 @@ export const AddAccountModal: React.FC<{
   }, [isOpen]);
 
   React.useEffect(() => {
-    if (!isOpen || !prefs.showDemoData) return;
+    if (!isOpen || !showDemoData) return;
     const q = query.trim();
     if (!q) {
       setResults([]);
@@ -51,7 +51,7 @@ export const AddAccountModal: React.FC<{
       setLoading(false);
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, network, isOpen, prefs.showDemoData]);
+  }, [query, network, isOpen, showDemoData]);
 
   const isDuplicate = (name: string) => {
     const lower = name.trim().toLowerCase();
@@ -204,7 +204,7 @@ export const AddAccountModal: React.FC<{
           {!loading &&
             query.trim() &&
             results.length > 0 &&
-            !prefs.showDemoData && (
+            !showDemoData && (
               <div className="text-xs text-gray-500 mt-2">
                 {t("modal.account.suggestionsDisabled")}
               </div>
@@ -213,7 +213,7 @@ export const AddAccountModal: React.FC<{
           {!loading &&
             query.trim() &&
             results.length === 0 &&
-            prefs.showDemoData && (
+            showDemoData && (
               <div className="text-xs text-gray-500 mt-2">
                 {t("modal.account.empty")}
               </div>

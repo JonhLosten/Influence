@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { usePreferences } from "../store/usePreferences";
 import { Button } from "../components/button";
 import { getVideoPublishJobStatus, retryVideoPublishJob } from "../lib/api"; // Import API functions
 
@@ -88,7 +87,6 @@ const allPossibleErrors: DisplayedError[] = [
 ];
 
 export function Troubleshooting() {
-  const { preferences } = usePreferences();
   const [failedJobs, setFailedJobs] = useState<any[]>([]);
 
   // In a real app, you would fetch failed jobs from the backend
@@ -151,9 +149,13 @@ export function Troubleshooting() {
       a.remove();
       window.URL.revokeObjectURL(url);
       alert("Logs téléchargés avec succès!");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error exporting logs:", error);
-      alert(`Échec de l'exportation des logs: ${error.message}`);
+      if (error instanceof Error) {
+        alert(`Échec de l'exportation des logs: ${error.message}`);
+      } else {
+        alert("Échec de l'exportation des logs: une erreur inconnue est survenue.");
+      }
     }
   };
 
@@ -166,9 +168,13 @@ export function Troubleshooting() {
       setFailedJobs((prevJobs) =>
         prevJobs.map((job) => (job.id === jobId ? updatedJobResponse.job : job))
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`Error replaying job ${jobId}:`, error);
-      alert(`Échec du rejeu de la tâche ${jobId}: ${error.message}`);
+      if (error instanceof Error) {
+        alert(`Échec du rejeu de la tâche ${jobId}: ${error.message}`);
+      } else {
+        alert("Échec du rejeu de la tâche: une erreur inconnue est survenue.");
+      }
     }
   };
 

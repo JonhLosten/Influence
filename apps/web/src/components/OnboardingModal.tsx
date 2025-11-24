@@ -3,27 +3,26 @@ import { usePreferences } from "../store/usePreferences";
 import { Button } from "../components/button";
 
 export function OnboardingModal() {
-  const { preferences, setPreference } = usePreferences();
+  const { hasCompletedOnboarding, completeOnboarding } = usePreferences();
   const [step, setStep] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (!preferences.onboardingCompleted && !preferences.onboardingSkipped) {
+    if (!hasCompletedOnboarding) {
       setShowModal(true);
     }
-  }, [preferences.onboardingCompleted, preferences.onboardingSkipped]);
+  }, [hasCompletedOnboarding]);
 
   const handleNext = () => {
     setStep(step + 1);
   };
 
   const handleSkip = () => {
-    setPreference("onboardingSkipped", true);
     setShowModal(false);
   };
 
   const handleComplete = () => {
-    setPreference("onboardingCompleted", true);
+    completeOnboarding();
     setShowModal(false);
   };
 
@@ -37,6 +36,7 @@ export function OnboardingModal() {
       description:
         "Découvrez comment gérer et optimiser votre présence sur les réseaux sociaux.",
       buttonText: "Commencer",
+      action: handleNext,
     },
     {
       title: "Étape 1: Connectez vos comptes API",
@@ -80,15 +80,15 @@ export function OnboardingModal() {
           {currentStep.description}
         </p>
         <div className="flex justify-between">
-          {step < steps.length - 1 ? (
-            <Button onClick={handleNext}>{currentStep.buttonText}</Button>
-          ) : (
-            <Button onClick={currentStep.action}>
-              {currentStep.buttonText}
-            </Button>
-          )}
+          <Button onClick={currentStep.action ? currentStep.action : handleNext}>
+            {currentStep.buttonText}
+          </Button>
+
           {step < steps.length - 1 && (
-            <Button variant="secondary" onClick={handleSkip}>
+            <Button
+              className="bg-transparent hover:bg-gray-100 text-gray-700 border"
+              onClick={handleSkip}
+            >
               Passer
             </Button>
           )}
